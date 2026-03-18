@@ -1,1 +1,62 @@
-[]
+[
+  {
+    "timestamp": "2026-03-18T17:21:51.526396",
+    "query_id": "dd34acf4-90b5-4c10-9f20-4128fbe5e399",
+    "question": "what is string",
+    "latency_sec": 7.066,
+    "search_type": "web",
+    "input_tokens": 670,
+    "output_tokens": 26,
+    "total_tokens": 696,
+    "cost_usd": 3.558e-05,
+    "status": "success"
+  },
+  {
+    "timestamp": "2026-03-18T17:38:31.577958",
+    "query_id": "b0fc84f3-e651-4b2d-a2f3-48dbd88054f2",
+    "question": "types of string",
+    "latency_sec": 1.741,
+    "search_type": "web",
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "cost_usd": 0.0,
+    "status": "no_results"
+  },
+  {
+    "timestamp": "2026-03-18T17:38:48.872061",
+    "query_id": "6ce7f462-be47-4afd-9099-78a7542cde42",
+    "question": "what is string",
+    "latency_sec": 0.001,
+    "search_type": "cache",
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "cost_usd": 0.0,
+    "status": "cache_hit"
+  },
+  {
+    "timestamp": "2026-03-18T17:38:52.610500",
+    "query_id": "ff599ce9-a6ad-45d8-8f11-c303da498bb6",
+    "question": "what is string",
+    "latency_sec": 0.0,
+    "search_type": "cache",
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "cost_usd": 0.0,
+    "status": "cache_hit"
+  },
+  {
+    "timestamp": "2026-03-18T17:38:54.671214",
+    "query_id": "d0dff2c7-3404-4f49-877f-0b5c0f3b7374",
+    "question": "what is string",
+    "latency_sec": 0.001,
+    "search_type": "cache",
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "cost_usd": 0.0,
+    "status": "cache_hit"
+  }
+]

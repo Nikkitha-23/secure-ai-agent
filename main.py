@@ -1,16 +1,18 @@
 """
-main.py — FastAPI with Full Agentic RAG Pipeline + Memory + Monitor
---------------------------------------------------------------------
+main.py — FastAPI with Full Agentic RAG Pipeline + Memory + Monitor + Cache
+---------------------------------------------------------------------------
 Flow:
 1. Security Check
-2. Memory Recall
-3. Query Rewriting
-4. Smart Router        → pdf / web / both
-5. Retrieve            → ChromaDB and/or Tavily
-6. Re-Ranker           → top 3 chunks
-7. LLM (Groq)          → final answer
-8. Memory Save
-9. Monitor Log         ← NEW
+2. Cache Check         ← NEW (instant return if cached)
+3. Memory Recall
+4. Query Rewriting
+5. Smart Router        → pdf / web / both
+6. Retrieve            → ChromaDB and/or Tavily
+7. Re-Ranker           → top 3 chunks
+8. LLM (Groq)          → final answer
+9. Memory Save
+10. Cache Save         ← NEW
+11. Monitor Log
 """
 
 from fastapi import FastAPI
@@ -23,6 +25,7 @@ from rag.web_search import web_search
 from rag.query_rewriter import rewrite_query
 from rag.memory import get_memory
 from rag.monitor import monitor
+from rag.cache import cache              # ← NEW
 from functools import lru_cache
 from dotenv import load_dotenv
 import logging
@@ -66,26 +69,33 @@ def ask_question(request: QueryRequest):
 
     clean_query = result["clean_input"]
 
+    # ⚡ STEP 2: Cache Check
+    cached_response = cache.get(clean_query)
+    if cached_response:
+        monitor.end(query_id, question=clean_query, search_type="cache", status="cache_hit")
+        logging.info(f"⚡ Cache HIT — returning instantly!")
+        return cached_response
+
     try:
-        # 🧠 STEP 2: Memory Recall
+        # 🧠 STEP 3: Memory Recall
         past_context = memory.recall(clean_query, session_id)
         if past_context:
             logging.info(f"🧠 Memory recalled for session: {session_id}")
 
-        # ✏️ STEP 3: Query Rewriting
+        # ✏️ STEP 4: Query Rewriting
         rewritten_query = rewrite_query(clean_query)
 
-        # 🧭 STEP 4: Smart Router
+        # 🧭 STEP 5: Smart Router
         source = decide_source(rewritten_query)
         all_docs = []
 
-        # 📚 STEP 5a: PDF Retrieval
+        # 📚 STEP 6a: PDF Retrieval
         if source in ["pdf", "both"]:
             pdf_docs = retriever.invoke(rewritten_query)
             logging.info(f"📄 PDF chunks retrieved: {len(pdf_docs)}")
             all_docs.extend(pdf_docs)
 
-        # 🌐 STEP 5b: Web Search
+        # 🌐 STEP 6b: Web Search
         if source in ["web", "both"]:
             web_docs = web_search(rewritten_query, max_results=3)
             logging.info(f"🌐 Web results retrieved: {len(web_docs)}")
@@ -100,7 +110,7 @@ def ask_question(request: QueryRequest):
                 "rewritten_query": rewritten_query
             }
 
-        # 🏆 STEP 6: Re-Rank
+        # 🏆 STEP 7: Re-Rank
         reranked_docs = rerank_documents(rewritten_query, all_docs, top_n=3)
         logging.info(f"✅ Re-ranked: top {len(reranked_docs)} chunks selected")
 
@@ -126,7 +136,7 @@ Question:
 
 Answer (use only context facts):"""
 
-        # 🚀 STEP 7: Groq LLM Call
+        # 🚀 STEP 8: Groq LLM Call
         response = client.chat.completions.create(
             model="llama-3.1-8b-instant",
             messages=[
@@ -139,10 +149,10 @@ Answer (use only context facts):"""
         answer = response.choices[0].message.content
         logging.info("✅ LLM response received")
 
-        # 💾 STEP 8: Memory Save
+        # 💾 STEP 9: Memory Save
         memory.save(clean_query, answer, session_id)
 
-        # 📊 STEP 9: Monitor Log
+        # 📊 STEP 10: Monitor Log
         monitor.end(
             query_id,
             question=clean_query,
@@ -156,13 +166,18 @@ Answer (use only context facts):"""
             doc.metadata.get("source", "unknown") for doc in reranked_docs
         ]))
 
-        return {
+        response_data = {
             "answer": answer,
             "sources": sources,
             "context": [doc.page_content for doc in reranked_docs],
             "search_type": source,
             "rewritten_query": rewritten_query
         }
+
+        # ⚡ STEP 11: Cache Save
+        cache.set(clean_query, response_data)
+
+        return response_data
 
     except ConnectionError as e:
         monitor.end(query_id, question=clean_query, status="error")
@@ -204,3 +219,13 @@ def monitor_recent(n: int = 10):
 def monitor_clear():
     monitor.clear()
     return {"status": "✅ Monitor log cleared"}
+
+# ── Cache endpoints ────────────────────────────────────────────────────────────
+@app.get("/cache/stats")
+def cache_stats():
+    return cache.stats()
+
+@app.delete("/cache/clear")
+def cache_clear():
+    cache.clear()
+    return {"status": "✅ Cache cleared"}
