@@ -58,5 +58,17 @@
     "total_tokens": 0,
     "cost_usd": 0.0,
     "status": "cache_hit"
+  },
+  {
+    "timestamp": "2026-03-18T17:46:34.001899",
+    "query_id": "da363c29-7073-4708-b760-1509fce920ce",
+    "question": "string types?",
+    "latency_sec": 9.022,
+    "search_type": "web",
+    "input_tokens": 700,
+    "output_tokens": 10,
+    "total_tokens": 710,
+    "cost_usd": 3.58e-05,
+    "status": "success"
   }
 ]

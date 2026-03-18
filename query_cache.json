@@ -17,5 +17,24 @@
       "search_type": "web",
       "rewritten_query": "definition of string data type in computer programming languages"
     }
+  },
+  "54304216a29c7e75a7f251cccd0657df": {
+    "question": "string types?",
+    "timestamp": 1773836194.0029123,
+    "data": {
+      "answer": "`char` for single characters and `String` for sequences of characters.",
+      "sources": [
+        "Tavily Web Search (Direct Answer)",
+        "https://www.freecodecamp.org/news/variable-data-types-explained/",
+        "https://rivo.agency/blog/understanding-variables-data-types-and-operators-in-programming"
+      ],
+      "context": [
+        "String variables in programming languages are used to store text and are typically defined as char or string types. In dynamically typed languages, the string type can change if different data is assigned. Strings can be literals or variables holding sequences of characters.",
+        "## Data Types:\n\nData types define the kind of values that variables can hold. Different programming languages offer various data types to accommodate a wide range of data. Common data types include:\n\n1. Integers: Whole numbers without decimal points (e.g., 42).\n2. Floats (Floating-Point Numbers): Numbers with decimal points or in exponential form (e.g., 3.14).\n3. Strings: Sequences of characters, typically used for text (e.g., \u201cHello, World!\u201d).\n4. Booleans: Representing truth values, either True or False.\n5. Arrays or Lists: Ordered collections of values.\n6. Objects or Dictionaries: Unordered collections of key-value pairs.\n\nUnderstanding data types is crucial for efficient memory usage and proper data manipulation within a program.\n\n## Operators:",
+        "## Basic Data Types\n\nThe most common basic data types available in most programming languages include:\n\nnumbers: we use this for any data that is numeric or should be worked with as a number for addition or other math operations.\n\nIn some programming languages, there are multiple data types for numbers, depending on whether the number is an integer, decimal, or currency, for example.\n\nIf we were building a number guessing game, we would hold the guessed number in a numeric data type, like this:\n\n```\nusersGuess = 3 \n```\n\nstring: we use this for any data that is text. For example, a name or address or message. In most programming languages, strings require quotes. Notice that the text inside of the quotes can include spaces and other special characters. [...] ## Wrapping Up\n\nA variable has a data type such as number, string (for text), date, and Boolean (for true or false).\n\nAn array stores a set of data items, often of the same type.\n\nAn object represents something in the website or app, like a pet, a customer, or a blog post. The object groups related properties holding the data for the object.\n\nNow that you know all about data types, you can create variables of the appropriate type to hold any data you need for your website or app.\n\nIf you are self-taught or new to programming and want more information about general programming concepts, check out this course:\n\nIf you read this far, thank the author to show them you care. [...] With \"dynamically typed\" languages such as JavaScript and Python, the data type defines the kind of data currently assigned to that variable. That type can change if you put a different type of data into that variable. So the type dynamically changes based on the currently assigned value.\n\n```\n'Pet List'// Variable type is a string 42// Variable type is now a number\n```\n\n## Array (List) Data Type\n\nAnother important data type in programming is an array, which in some programming languages is called a list.\n\nLet's say we add a feature to our website or app so the user can provide the name of each of their pets. We could hold each name in a separate variable like shown in Figure 1."
+      ],
+      "search_type": "web",
+      "rewritten_query": "data types for string variables in programming languages"
+    }
   }
 }
