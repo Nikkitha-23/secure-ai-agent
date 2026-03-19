@@ -36,5 +36,24 @@
       "search_type": "web",
       "rewritten_query": "data types for string variables in programming languages"
     }
+  },
+  "4a73c85a2e7f6a9c8be49b39ead3c93b": {
+    "question": "types of ML?",
+    "timestamp": 1773895098.9249692,
+    "data": {
+      "answer": "There are five broad categories of machine learning:\n\n1. Supervised learning\n2. Unsupervised learning\n3. Semi-supervised learning\n4. Self-supervised learning\n5. Reinforcement learning",
+      "sources": [
+        "https://www.ibm.com/think/topics/machine-learning-types",
+        "Tavily Web Search (Direct Answer)",
+        "https://www.geeksforgeeks.org/machine-learning/types-of-machine-learning/"
+      ],
+      "context": [
+        "There are several types of machine learning, each with special characteristics and applications. Some of the main types of machine learning algorithms are as follows:\n\n1. Supervised Machine Learning\n2. Unsupervised Machine Learning\n3. Reinforcement Learning\n\nAdditionally, there is a more specific category called Semi-Supervised Learning and Self-Supervised Learning, which combines elements of both supervised and unsupervised learning\n\ntypes_of_machine_learning\n\nTypes of Machine Learning\n\n## 1. Supervised Machine Learning [...] unsupervised_learning\n\nUnsupervised Machine Learning\n\nExample: If you have customer data without labels, the algorithm can group similar customers based on purchase behavior useful for segmentation and marketing.\n\nThere are two main categories of unsupervised learning that are mentioned below:\n\n### 1. Clustering\n\nClustering is the process of grouping data points into clusters based on their similarity. This technique is useful for identifying patterns and relationships in data without the need for labeled examples. Common techniques include:\n\n K-Means\n DBSCAN\n Mean-shift\n\n### 2. Dimensionality Reduction Techniques\n\nDimensionality reduction helps reduce the number of features while preserving important information. Common techniques include:",
+        "Watch all episodes of Mixture of Experts\n\n## Machine learning types\n\nMachine learning algorithms fall into five broad categories: supervised learning, unsupervised learning, semi-supervised learning, self-supervised and reinforcement learning.\n\n### 1. Supervised machine learning\n\nSupervised machine learning is a type of machine learning where the model is trained on a labeled dataset (i.e., the target or outcome variable is known). For instance, if data scientists were building a model for tornado forecasting, the input variables might include date, location, temperature, wind flow patterns and more, and the output would be the actual tornado activity recorded for those days. [...] ### 5. Semi-supervised learning\n\nThe fifth type of machine learning technique offers a combination between supervised and unsupervised learning.\n\nSemi-supervised learning algorithms are trained on a small labeled dataset and a large unlabeled dataset, with the labeled data guiding the learning process for the larger body of unlabeled data. A semi-supervised learning model might use unsupervised learning to identify data clusters and then use supervised learning to label the clusters.\n\nGenerative adversarial networks (GANs)\u2014deep learning tool that generates unlabeled data by training two neural networks\u2014are an example of semi-supervised machine learning. [...] ### 2. Unsupervised machine learning\n\nUnsupervised learning algorithms\u2014like Apriori, Gaussian Mixture Models (GMMs) and principal component analysis (PCA)\u2014draw inferences from unlabeled datasets, facilitating exploratory data analysis and enabling pattern recognition and predictive modeling.\n\nThe most common unsupervised learning method is cluster analysis, which uses clustering algorithms to categorize data points according to value similarity (as in customer segmentation or anomaly detection). Association algorithms allow data scientists to identify associations between data objects inside large databases, facilitating data visualization and dimensionality reduction.",
+        "Machine learning includes supervised and unsupervised techniques. Supervised learning uses labeled data, while unsupervised finds patterns in unlabeled data. Reinforcement learning trains agents through rewards and penalties."
+      ],
+      "search_type": "web",
+      "rewritten_query": "Machine learning types and categories including supervised and unsupervised learning techniques."
+    }
   }
 }

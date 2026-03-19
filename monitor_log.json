@@ -70,5 +70,17 @@
     "total_tokens": 710,
     "cost_usd": 3.58e-05,
     "status": "success"
+  },
+  {
+    "timestamp": "2026-03-19T10:08:18.920938",
+    "query_id": "8eca0359-8723-4538-993d-784249015077",
+    "question": "types of ML?",
+    "latency_sec": 9.325,
+    "search_type": "web",
+    "input_tokens": 549,
+    "output_tokens": 23,
+    "total_tokens": 572,
+    "cost_usd": 2.929e-05,
+    "status": "success"
   }
 ]

@@ -1,0 +1,17 @@
+[
+  {
+    "id": "c5def437-5f5f-4b71-873e-0860ca64be64",
+    "text": "User asked: types of ML?\nAssistant answered: There are five broad categories of machine learning:\n\n1. Supervised learning\n2. Unsupervised learning\n3. Semi-supervised learning\n4. Self-supervised learning\n5. Reinforcement learning",
+    "memory_type": "episodic",
+    "session_id": "default",
+    "relevance_score": 1.0,
+    "importance_score": 0.2,
+    "confidence_score": 0.43000000000000005,
+    "created_at": 1773895098.915347,
+    "last_accessed": 1773895098.915347,
+    "access_count": 0,
+    "source_query": "types of ML?",
+    "source_answer": "There are five broad categories of machine learning:\n\n1. Supervised learning\n2. Unsupervised learning\n3. Semi-supervised learning\n4. Self-supervised learning\n5. Reinforcement learning",
+    "tags": []
+  }
+]

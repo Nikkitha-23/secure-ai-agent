@@ -23,7 +23,7 @@ from rag.reranker import rerank_documents
 from rag.router import decide_source
 from rag.web_search import web_search
 from rag.query_rewriter import rewrite_query
-from rag.memory import get_memory
+from rag.memory import get_memory_manager
 from rag.monitor import monitor
 from rag.cache import cache              # ← NEW
 from functools import lru_cache
@@ -46,7 +46,7 @@ def get_cached_retriever():
     return get_retriever()
 
 retriever = get_cached_retriever()
-memory = get_memory()
+memory = get_memory_manager()
 
 class QueryRequest(BaseModel):
     question: str
