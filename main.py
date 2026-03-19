@@ -84,6 +84,11 @@ def ask_question(request: QueryRequest):
 
         # ✏️ STEP 4: Query Rewriting
         rewritten_query = rewrite_query(clean_query)
+        # 🔧 Procedural memory → routing bias
+        procedural_rules = memory.get_procedural_rules(clean_query, session_id)
+        if procedural_rules:
+           logging.info(f"🔧 Procedural rules applied: {len(procedural_rules)}")
+           rewritten_query = rewritten_query + " " + " ".join(procedural_rules[:1])
 
         # 🧭 STEP 5: Smart Router
         source = decide_source(rewritten_query)

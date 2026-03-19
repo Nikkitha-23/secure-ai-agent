@@ -25,10 +25,10 @@ INJECTION_THRESHOLD = {
 
 # Injection order — procedural first (most important)
 INJECTION_ORDER = [
-    MemoryType.PROCEDURAL,
-    MemoryType.SEMANTIC,
-    MemoryType.PREFERENCE,
-    MemoryType.EPISODIC,
+    MemoryType.PREFERENCE,   # ✅ user context first
+    MemoryType.PROCEDURAL,   # ✅ reasoning rules second
+    MemoryType.SEMANTIC,     # ✅ facts third
+    MemoryType.EPISODIC,     # ✅ past conversations last
 ]
 
 

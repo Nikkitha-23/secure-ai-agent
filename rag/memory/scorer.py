@@ -77,17 +77,21 @@ class MemoryScorer:
         - Access count (verified multiple times = more confident)
         - Memory type (procedural = high confidence needed)
         """
-        # Longer answers = more detailed = higher confidence
+        # grounding_score — source answer எவ்வளவு detailed?
         answer_len = len(entry.source_answer.split()) if entry.source_answer else 0
-        length_score = min(1.0, answer_len / 50)
+        grounding_score = min(1.0, answer_len / 50)
 
-        # More accesses = more validated
-        access_score = min(0.3, entry.access_count * 0.1)
+        # verification_score — எத்தனை தடவை verified?
+        verification_score = min(1.0, 0.3 + (entry.access_count * 0.1))
 
-        # Procedural memories need high confidence
-        type_bonus = 0.2 if entry.memory_type == MemoryType.PROCEDURAL else 0.0
+        # confidence = grounding × verification
+        confidence = grounding_score * verification_score
 
-        return min(1.0, length_score * 0.5 + access_score + type_bonus + 0.2)
+        # Procedural memory needs extra verification
+        if entry.memory_type == MemoryType.PROCEDURAL:
+          confidence = confidence * 0.8 + 0.2  # floor of 0.2
+
+        return round(min(1.0, max(0.0, confidence)), 4)
 
     def score_all(self, query: str, entry: MemoryEntry) -> MemoryEntry:
         """Update all scores for an entry given current query."""

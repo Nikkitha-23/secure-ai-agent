@@ -82,5 +82,41 @@
     "total_tokens": 572,
     "cost_usd": 2.929e-05,
     "status": "success"
+  },
+  {
+    "timestamp": "2026-03-19T11:13:09.388338",
+    "query_id": "db7fee71-ad9f-44ae-8e1d-c05fac20b118",
+    "question": "why do we use AI?",
+    "latency_sec": 7.17,
+    "search_type": "web",
+    "input_tokens": 613,
+    "output_tokens": 22,
+    "total_tokens": 635,
+    "cost_usd": 3.241e-05,
+    "status": "success"
+  },
+  {
+    "timestamp": "2026-03-19T22:23:41.307528",
+    "query_id": "f7e901a2-a6df-4a2b-aa0a-0d7ab064a889",
+    "question": "types of string?",
+    "latency_sec": 9.481,
+    "search_type": "web",
+    "input_tokens": 758,
+    "output_tokens": 13,
+    "total_tokens": 771,
+    "cost_usd": 3.894e-05,
+    "status": "success"
+  },
+  {
+    "timestamp": "2026-03-19T22:27:48.732158",
+    "query_id": "8d5937ca-4e1b-4274-9fbf-157e8d825b99",
+    "question": "where to use DL?",
+    "latency_sec": 8.221,
+    "search_type": "web",
+    "input_tokens": 703,
+    "output_tokens": 34,
+    "total_tokens": 737,
+    "cost_usd": 3.787e-05,
+    "status": "success"
   }
 ]

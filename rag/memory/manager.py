@@ -23,6 +23,7 @@ from .scorer import MemoryScorer
 from .pruner import MemoryPruner
 from .validator import MemoryValidator
 from .injector import MemoryInjector
+from .pipeline import MemoryPipeline
 
 MEMORY_STORE = "memory_store.json"
 logging.basicConfig(level=logging.INFO)
@@ -56,6 +57,7 @@ class MemoryManager:
         self.validator = MemoryValidator()
         self.injector  = MemoryInjector()
         self._load()
+        self.pipeline = MemoryPipeline(self._store, self._save)
         logging.info("✅ Advanced Memory Manager initialized")
 
     def _load(self):
@@ -101,19 +103,8 @@ class MemoryManager:
             last_accessed=datetime.now().timestamp(),
         )
 
-        # Score the new entry
         self.scorer.score_all(question, entry)
-
-        self._store.append(entry)
-
-        # Validate after adding
-        self._store = self.validator.validate_all(self._store)
-
-        # Prune every 20 saves to keep store clean
-        if len(self._store) % 20 == 0:
-            self._store = self.pruner.full_prune(self._store)
-
-        self._save()
+        self.pipeline.process_write(entry)
         logging.info(f"💾 Memory saved [{memory_type.value}]: '{question[:50]}'")
 
     def recall(self, query: str, session_id: str = "default") -> str:
@@ -133,9 +124,22 @@ class MemoryManager:
             entry.access_count += 1
 
         # Inject relevant memories
-        context = self.injector.inject(query, session_memories)
-        self._save()
+        context = self.pipeline.process_read(query, session_id)
         return context
+    def get_procedural_rules(self, query: str, session_id: str = "default") -> list:
+        """
+        Get procedural memories that should affect agent behavior.
+        Used by router to bias retrieval strategy.
+        """
+        procedural = [
+            e for e in self._store
+            if e.session_id == session_id
+            and e.memory_type == MemoryType.PROCEDURAL
+            and e.confidence_score >= 0.5
+        ]
+
+        scored = self.scorer.rank(query, procedural)
+        return [e.text for e in scored[:3] if e.relevance_score > 0.3]
 
     def clear(self, session_id: str = "default"):
         """Clear memories for a session."""
