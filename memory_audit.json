@@ -1078,5 +1078,338 @@
     "text_preview": "What topics have we discussed?",
     "score": 0.8356,
     "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T10:57:29.982921",
+    "operation": "read",
+    "memory_type": "all",
+    "session_id": "default",
+    "text_preview": "hii",
+    "score": 0.0,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T10:57:36.716902",
+    "operation": "write",
+    "memory_type": "episodic",
+    "session_id": "default",
+    "text_preview": "hii",
+    "score": 0.706,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T10:57:45.294179",
+    "operation": "read",
+    "memory_type": "all",
+    "session_id": "default",
+    "text_preview": "hi",
+    "score": 0.0,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T10:57:47.673810",
+    "operation": "write",
+    "memory_type": "episodic",
+    "session_id": "default",
+    "text_preview": "hi",
+    "score": 0.706,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T10:58:24.448947",
+    "operation": "read",
+    "memory_type": "all",
+    "session_id": "default",
+    "text_preview": "what is neural link?",
+    "score": 0.0,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T10:58:29.226215",
+    "operation": "write",
+    "memory_type": "episodic",
+    "session_id": "default",
+    "text_preview": "what is neural link?",
+    "score": 0.745,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T11:00:22.897217",
+    "operation": "read",
+    "memory_type": "all",
+    "session_id": "default",
+    "text_preview": "founder of america?",
+    "score": 0.0,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T11:00:27.519773",
+    "operation": "write",
+    "memory_type": "episodic",
+    "session_id": "default",
+    "text_preview": "founder of america?",
+    "score": 0.751,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T11:03:11.085332",
+    "operation": "read",
+    "memory_type": "all",
+    "session_id": "default",
+    "text_preview": "who was saw the America first?",
+    "score": 0.0,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T11:03:16.282053",
+    "operation": "write",
+    "memory_type": "episodic",
+    "session_id": "default",
+    "text_preview": "who was saw the America first?",
+    "score": 0.724,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T11:05:08.927157",
+    "operation": "read",
+    "memory_type": "all",
+    "session_id": "default",
+    "text_preview": "what is kpop?",
+    "score": 0.0,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T11:05:16.803613",
+    "operation": "write",
+    "memory_type": "episodic",
+    "session_id": "default",
+    "text_preview": "what is kpop?",
+    "score": 0.7585,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T11:09:17.447748",
+    "operation": "write",
+    "memory_type": "preference",
+    "session_id": "stress_test_session",
+    "text_preview": "What is Artificial Intelligence?",
+    "score": 0.7727,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T11:09:22.782879",
+    "operation": "write",
+    "memory_type": "episodic",
+    "session_id": "stress_test_session",
+    "text_preview": "What is machine learning?",
+    "score": 0.7255,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T11:09:27.593574",
+    "operation": "write",
+    "memory_type": "preference",
+    "session_id": "stress_test_session",
+    "text_preview": "What is deep learning?",
+    "score": 0.7592,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T11:09:32.495040",
+    "operation": "write",
+    "memory_type": "procedural",
+    "session_id": "stress_test_session",
+    "text_preview": "What are neural networks?",
+    "score": 0.826,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T11:09:37.116892",
+    "operation": "write",
+    "memory_type": "preference",
+    "session_id": "stress_test_session",
+    "text_preview": "What is natural language processing?",
+    "score": 0.7645,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T11:09:41.315801",
+    "operation": "write",
+    "memory_type": "procedural",
+    "session_id": "stress_test_session",
+    "text_preview": "What is computer vision?",
+    "score": 0.8296,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T11:09:45.838346",
+    "operation": "write",
+    "memory_type": "episodic",
+    "session_id": "stress_test_session",
+    "text_preview": "What is reinforcement learning?",
+    "score": 0.7255,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T11:09:49.926781",
+    "operation": "write",
+    "memory_type": "episodic",
+    "session_id": "stress_test_session",
+    "text_preview": "What is supervised learning?",
+    "score": 0.7375,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T11:09:54.320011",
+    "operation": "write",
+    "memory_type": "episodic",
+    "session_id": "stress_test_session",
+    "text_preview": "What is unsupervised learning?",
+    "score": 0.7285,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T11:10:03.426624",
+    "operation": "write",
+    "memory_type": "episodic",
+    "session_id": "stress_test_session",
+    "text_preview": "What is transfer learning?",
+    "score": 0.7705,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T11:10:18.687881",
+    "operation": "write",
+    "memory_type": "episodic",
+    "session_id": "stress_test_session",
+    "text_preview": "What are the applications of AI?",
+    "score": 0.7615,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T11:10:31.187283",
+    "operation": "write",
+    "memory_type": "procedural",
+    "session_id": "stress_test_session",
+    "text_preview": "How is AI used in healthcare?",
+    "score": 0.8332,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T11:10:46.244125",
+    "operation": "write",
+    "memory_type": "episodic",
+    "session_id": "stress_test_session",
+    "text_preview": "How is AI used in finance?",
+    "score": 0.7645,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T11:10:58.996806",
+    "operation": "write",
+    "memory_type": "episodic",
+    "session_id": "stress_test_session",
+    "text_preview": "How is AI used in education?",
+    "score": 0.7405,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T11:11:15.317599",
+    "operation": "write",
+    "memory_type": "procedural",
+    "session_id": "stress_test_session",
+    "text_preview": "How is AI used in agriculture?",
+    "score": 0.8052,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T11:11:29.760579",
+    "operation": "write",
+    "memory_type": "episodic",
+    "session_id": "stress_test_session",
+    "text_preview": "What is a neural network architecture?",
+    "score": 0.7495,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T11:11:39.183758",
+    "operation": "write",
+    "memory_type": "episodic",
+    "session_id": "stress_test_session",
+    "text_preview": "What is backpropagation?",
+    "score": 0.7585,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T11:11:52.291624",
+    "operation": "write",
+    "memory_type": "episodic",
+    "session_id": "stress_test_session",
+    "text_preview": "What is gradient descent?",
+    "score": 0.769,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T11:12:05.909112",
+    "operation": "write",
+    "memory_type": "episodic",
+    "session_id": "stress_test_session",
+    "text_preview": "What is overfitting?",
+    "score": 0.7345,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T11:12:18.987794",
+    "operation": "write",
+    "memory_type": "procedural",
+    "session_id": "stress_test_session",
+    "text_preview": "What is underfitting?",
+    "score": 0.8392,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T11:12:32.701364",
+    "operation": "write",
+    "memory_type": "preference",
+    "session_id": "stress_test_session",
+    "text_preview": "What is AI?",
+    "score": 0.7472,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T11:12:46.574090",
+    "operation": "write",
+    "memory_type": "procedural",
+    "session_id": "stress_test_session",
+    "text_preview": "Tell me about ML",
+    "score": 0.8076,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T11:12:56.569643",
+    "operation": "write",
+    "memory_type": "episodic",
+    "session_id": "stress_test_session",
+    "text_preview": "Explain NLP",
+    "score": 0.7405,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T11:13:08.025917",
+    "operation": "write",
+    "memory_type": "episodic",
+    "session_id": "stress_test_session",
+    "text_preview": "What did I ask about before?",
+    "score": 0.706,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T11:13:17.793482",
+    "operation": "write",
+    "memory_type": "episodic",
+    "session_id": "stress_test_session",
+    "text_preview": "What topics have we discussed?",
+    "score": 0.724,
+    "reason": ""
   }
 ]

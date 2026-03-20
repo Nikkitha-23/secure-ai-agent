@@ -15,6 +15,8 @@ Flow:
 11. Monitor Log
 """
 
+from time import time
+
 from fastapi import FastAPI
 from security.filter import check_input
 from pydantic import BaseModel
@@ -141,18 +143,28 @@ Question:
 
 Answer (use only context facts):"""
 
-        # 🚀 STEP 8: Groq LLM Call
-        response = client.chat.completions.create(
-            model="llama-3.1-8b-instant",
-            messages=[
-                {"role": "system", "content": "You are a secure and helpful college AI assistant."},
-                {"role": "user",   "content": prompt}
-            ],
-            temperature=0
-        )
+        # 🚀 STEP 8: Groq LLM Call with retry
+        def groq_with_retry(messages, retries=3, wait=10):
+            for attempt in range(retries):
+                try:
+                    return client.chat.completions.create(
+                        model="llama-3.1-8b-instant",
+                        messages=messages,
+                        temperature=0
+                    )
+                except Exception as e:
+                    if "429" in str(e) and attempt < retries - 1:
+                        logging.warning(f"⏳ Rate limit — waiting {wait}s (attempt {attempt+1})")
+                        time.sleep(wait)
+                    else:
+                        raise e
+
+        response = groq_with_retry([
+            {"role": "system", "content": "You are a secure and helpful college AI assistant."},
+            {"role": "user",   "content": prompt}
+        ])
 
         answer = response.choices[0].message.content
-        logging.info("✅ LLM response received")
 
         # 💾 STEP 9: Memory Save
         memory.save(clean_query, answer, session_id)
