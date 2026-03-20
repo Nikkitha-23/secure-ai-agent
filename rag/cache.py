@@ -58,8 +58,35 @@ class QueryCache:
             logging.error(f"❌ Cache save failed: {e}")
 
     def _hash(self, question: str) -> str:
-        """Create cache key from question."""
+        """
+        Semantic-aware cache key.
+        Normalize before hashing — similar questions same key ஆகும்.
+        """
+        import re
+        # Lowercase + remove punctuation
         normalized = question.lower().strip()
+        normalized = re.sub(r'[^\w\s]', '', normalized)
+        
+        # Common synonym normalization
+        replacements = {
+            r'\bai\b': 'artificial intelligence',
+            r'\bml\b': 'machine learning',
+            r'\bnlp\b': 'natural language processing',
+            r'\bdl\b': 'deep learning',
+            r'\bnn\b': 'neural network',
+            r'\bwhats\b': 'what is',
+            r'\btell me about\b': 'what is',
+            r'\bexplain\b': 'what is',
+            r'\bdescribe\b': 'what is',
+        }
+        for pattern, replacement in replacements.items():
+            normalized = re.sub(pattern, replacement, normalized)
+        
+        # Remove stop words
+        stop_words = {'a', 'an', 'the', 'me', 'about', 'please', 'can', 'you'}
+        words = [w for w in normalized.split() if w not in stop_words]
+        normalized = ' '.join(sorted(words))  # sort for order-independence
+        
         return hashlib.md5(normalized.encode()).hexdigest()
 
     def get(self, question: str) -> Optional[dict]:

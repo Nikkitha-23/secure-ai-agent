@@ -1411,5 +1411,257 @@
     "text_preview": "What topics have we discussed?",
     "score": 0.724,
     "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T11:25:13.207490",
+    "operation": "read",
+    "memory_type": "all",
+    "session_id": "default",
+    "text_preview": "how to describe AI? as a software engineer point of view?",
+    "score": 0.0,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T11:25:20.248505",
+    "operation": "write",
+    "memory_type": "procedural",
+    "session_id": "default",
+    "text_preview": "how to describe AI? as a software engineer point of view?",
+    "score": 0.8236,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T11:26:18.800408",
+    "operation": "write",
+    "memory_type": "preference",
+    "session_id": "stress_test_session",
+    "text_preview": "What is Artificial Intelligence?",
+    "score": 0.7727,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T11:26:21.898657",
+    "operation": "write",
+    "memory_type": "episodic",
+    "session_id": "stress_test_session",
+    "text_preview": "What is machine learning?",
+    "score": 0.7255,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T11:26:24.968917",
+    "operation": "write",
+    "memory_type": "preference",
+    "session_id": "stress_test_session",
+    "text_preview": "What is deep learning?",
+    "score": 0.7592,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T11:26:28.141725",
+    "operation": "write",
+    "memory_type": "procedural",
+    "session_id": "stress_test_session",
+    "text_preview": "What are neural networks?",
+    "score": 0.826,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T11:26:31.626729",
+    "operation": "write",
+    "memory_type": "preference",
+    "session_id": "stress_test_session",
+    "text_preview": "What is natural language processing?",
+    "score": 0.7645,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T11:26:34.691477",
+    "operation": "write",
+    "memory_type": "procedural",
+    "session_id": "stress_test_session",
+    "text_preview": "What is computer vision?",
+    "score": 0.8296,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T11:26:35.185985",
+    "operation": "read",
+    "memory_type": "all",
+    "session_id": "default",
+    "text_preview": "how to describe ML? as a software engineer point of view?",
+    "score": 0.0,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T11:26:38.795309",
+    "operation": "write",
+    "memory_type": "episodic",
+    "session_id": "stress_test_session",
+    "text_preview": "What is reinforcement learning?",
+    "score": 0.7255,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T11:26:45.409450",
+    "operation": "write",
+    "memory_type": "episodic",
+    "session_id": "stress_test_session",
+    "text_preview": "What is supervised learning?",
+    "score": 0.7375,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T11:26:53.565929",
+    "operation": "write",
+    "memory_type": "episodic",
+    "session_id": "stress_test_session",
+    "text_preview": "What is unsupervised learning?",
+    "score": 0.7285,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T11:27:09.988634",
+    "operation": "write",
+    "memory_type": "episodic",
+    "session_id": "stress_test_session",
+    "text_preview": "What is transfer learning?",
+    "score": 0.7705,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T11:27:24.567668",
+    "operation": "write",
+    "memory_type": "episodic",
+    "session_id": "stress_test_session",
+    "text_preview": "What are the applications of AI?",
+    "score": 0.7615,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T11:27:37.165242",
+    "operation": "write",
+    "memory_type": "procedural",
+    "session_id": "stress_test_session",
+    "text_preview": "How is AI used in healthcare?",
+    "score": 0.8332,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T11:27:40.985694",
+    "operation": "read",
+    "memory_type": "all",
+    "session_id": "default",
+    "text_preview": "how to describe ML? as a software engineer point of view?",
+    "score": 0.0,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T11:27:52.785566",
+    "operation": "write",
+    "memory_type": "procedural",
+    "session_id": "default",
+    "text_preview": "how to describe ML? as a software engineer point of view?",
+    "score": 0.8236,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T11:28:05.016003",
+    "operation": "write",
+    "memory_type": "episodic",
+    "session_id": "stress_test_session",
+    "text_preview": "How is AI used in finance?",
+    "score": 0.7645,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T11:28:11.351629",
+    "operation": "read",
+    "memory_type": "all",
+    "session_id": "default",
+    "text_preview": "how to describe DL? as a software engineer point of view?",
+    "score": 0.0,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T11:28:20.276231",
+    "operation": "write",
+    "memory_type": "episodic",
+    "session_id": "stress_test_session",
+    "text_preview": "How is AI used in education?",
+    "score": 0.7405,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T11:28:36.554202",
+    "operation": "write",
+    "memory_type": "procedural",
+    "session_id": "stress_test_session",
+    "text_preview": "How is AI used in agriculture?",
+    "score": 0.8052,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T11:28:51.713197",
+    "operation": "write",
+    "memory_type": "episodic",
+    "session_id": "stress_test_session",
+    "text_preview": "What is a neural network architecture?",
+    "score": 0.7495,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T11:29:00.521819",
+    "operation": "write",
+    "memory_type": "episodic",
+    "session_id": "stress_test_session",
+    "text_preview": "What is backpropagation?",
+    "score": 0.7585,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T11:29:15.187498",
+    "operation": "write",
+    "memory_type": "episodic",
+    "session_id": "stress_test_session",
+    "text_preview": "What is gradient descent?",
+    "score": 0.769,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T11:29:28.069339",
+    "operation": "write",
+    "memory_type": "episodic",
+    "session_id": "stress_test_session",
+    "text_preview": "What is overfitting?",
+    "score": 0.7345,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T11:29:40.457571",
+    "operation": "write",
+    "memory_type": "procedural",
+    "session_id": "stress_test_session",
+    "text_preview": "What is underfitting?",
+    "score": 0.8392,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T11:29:51.376789",
+    "operation": "write",
+    "memory_type": "episodic",
+    "session_id": "stress_test_session",
+    "text_preview": "What did I ask about before?",
+    "score": 0.706,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T11:30:02.795942",
+    "operation": "write",
+    "memory_type": "episodic",
+    "session_id": "stress_test_session",
+    "text_preview": "What topics have we discussed?",
+    "score": 0.724,
+    "reason": ""
   }
 ]
