@@ -1,0 +1,317 @@
+[
+  {
+    "timestamp": "2026-03-19T23:53:46.993988",
+    "operation": "read",
+    "memory_type": "all",
+    "session_id": "default",
+    "text_preview": "string types?",
+    "score": 0.0,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-19T23:53:56.608368",
+    "operation": "write",
+    "memory_type": "episodic",
+    "session_id": "default",
+    "text_preview": "string types?",
+    "score": 0.7195,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T00:04:49.651624",
+    "operation": "read",
+    "memory_type": "all",
+    "session_id": "default",
+    "text_preview": "string types?",
+    "score": 0.0,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T00:06:36.727342",
+    "operation": "read",
+    "memory_type": "all",
+    "session_id": "default",
+    "text_preview": "hello!",
+    "score": 0.0,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T00:06:39.991575",
+    "operation": "write",
+    "memory_type": "episodic",
+    "session_id": "default",
+    "text_preview": "hello!",
+    "score": 0.7015,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T00:07:38.071972",
+    "operation": "read",
+    "memory_type": "all",
+    "session_id": "default",
+    "text_preview": "most handsome man in the world in 2026?",
+    "score": 0.0,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T00:07:46.593086",
+    "operation": "write",
+    "memory_type": "episodic",
+    "session_id": "default",
+    "text_preview": "most handsome man in the world in 2026?",
+    "score": 0.7255,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T00:08:35.004798",
+    "operation": "read",
+    "memory_type": "all",
+    "session_id": "default",
+    "text_preview": "how fast the AI is growing?",
+    "score": 0.0,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T00:08:41.586436",
+    "operation": "write",
+    "memory_type": "episodic",
+    "session_id": "default",
+    "text_preview": "how fast the AI is growing?",
+    "score": 0.736,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T00:09:12.067330",
+    "operation": "read",
+    "memory_type": "all",
+    "session_id": "default",
+    "text_preview": " AI ?",
+    "score": 0.0,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T00:09:17.085978",
+    "operation": "write",
+    "memory_type": "semantic",
+    "session_id": "default",
+    "text_preview": " AI ?",
+    "score": 0.807,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T00:09:50.742179",
+    "operation": "read",
+    "memory_type": "all",
+    "session_id": "default",
+    "text_preview": " Current rate of artificial intelligence developmment and grow'?",
+    "score": 0.0,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T00:09:58.366196",
+    "operation": "write",
+    "memory_type": "episodic",
+    "session_id": "default",
+    "text_preview": " Current rate of artificial intelligence developmment and grow'?",
+    "score": 0.7165,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T00:10:01.068553",
+    "operation": "read",
+    "memory_type": "all",
+    "session_id": "default",
+    "text_preview": " Current rate of artificial intelligence development and grow'?",
+    "score": 0.0,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T00:10:08.378412",
+    "operation": "write",
+    "memory_type": "episodic",
+    "session_id": "default",
+    "text_preview": " Current rate of artificial intelligence development and grow'?",
+    "score": 0.7165,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T00:10:10.591023",
+    "operation": "read",
+    "memory_type": "all",
+    "session_id": "default",
+    "text_preview": " Current rate of artificial intelligence development and grow'?",
+    "score": 0.0,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T00:10:18.027678",
+    "operation": "write",
+    "memory_type": "episodic",
+    "session_id": "default",
+    "text_preview": " Current rate of artificial intelligence development and grow'?",
+    "score": 0.7165,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T00:10:41.688544",
+    "operation": "read",
+    "memory_type": "all",
+    "session_id": "default",
+    "text_preview": " what is narrow AI?",
+    "score": 0.0,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T00:10:46.906033",
+    "operation": "write",
+    "memory_type": "episodic",
+    "session_id": "default",
+    "text_preview": " what is narrow AI?",
+    "score": 0.7645,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T00:11:08.781073",
+    "operation": "read",
+    "memory_type": "all",
+    "session_id": "default",
+    "text_preview": " what is AI?",
+    "score": 0.0,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T00:11:15.691179",
+    "operation": "write",
+    "memory_type": "procedural",
+    "session_id": "default",
+    "text_preview": " what is AI?",
+    "score": 0.8236,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T00:11:19.258077",
+    "operation": "read",
+    "memory_type": "all",
+    "session_id": "default",
+    "text_preview": " what is AI?",
+    "score": 0.0,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T00:11:22.032022",
+    "operation": "write",
+    "memory_type": "procedural",
+    "session_id": "default",
+    "text_preview": " what is AI?",
+    "score": 0.8236,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-19T22:45:42.049607",
+    "operation": "read",
+    "memory_type": "all",
+    "session_id": "default",
+    "text_preview": "what is AI, ML, DL",
+    "score": 0.0,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-19T22:46:08.451253",
+    "operation": "read",
+    "memory_type": "all",
+    "session_id": "default",
+    "text_preview": "what is AI?",
+    "score": 0.0,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-19T22:46:37.282420",
+    "operation": "read",
+    "memory_type": "all",
+    "session_id": "default",
+    "text_preview": "Definition of artificial intelligence?",
+    "score": 0.0,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-19T22:46:41.134135",
+    "operation": "read",
+    "memory_type": "all",
+    "session_id": "default",
+    "text_preview": "Definition of artificial intelligence?",
+    "score": 0.0,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-19T22:56:09.332787",
+    "operation": "read",
+    "memory_type": "all",
+    "session_id": "default",
+    "text_preview": "whats is string?",
+    "score": 0.0,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-19T22:56:25.595012",
+    "operation": "read",
+    "memory_type": "all",
+    "session_id": "default",
+    "text_preview": "whats is string?",
+    "score": 0.0,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-19T22:57:22.630827",
+    "operation": "read",
+    "memory_type": "all",
+    "session_id": "default",
+    "text_preview": "whats is latency?",
+    "score": 0.0,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-19T22:57:28.203669",
+    "operation": "write",
+    "memory_type": "episodic",
+    "session_id": "default",
+    "text_preview": "whats is latency?",
+    "score": 0.727,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T10:05:10.465020",
+    "operation": "read",
+    "memory_type": "all",
+    "session_id": "default",
+    "text_preview": "where to use AI?",
+    "score": 0.0,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T10:05:19.903606",
+    "operation": "write",
+    "memory_type": "episodic",
+    "session_id": "default",
+    "text_preview": "where to use AI?",
+    "score": 0.7645,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T10:08:00.080720",
+    "operation": "read",
+    "memory_type": "all",
+    "session_id": "default",
+    "text_preview": "MEANING OF HELLO?",
+    "score": 0.0,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-20T10:08:07.230774",
+    "operation": "write",
+    "memory_type": "episodic",
+    "session_id": "default",
+    "text_preview": "MEANING OF HELLO?",
+    "score": 0.709,
+    "reason": ""
+  }
+]

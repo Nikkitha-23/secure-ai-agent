@@ -153,25 +153,22 @@ class MemoryPipeline:
     # ── READ PIPELINE ──────────────────────────────────────────────────────────
 
     def process_read(self, query: str, session_id: str) -> str:
-        """
-        Full read pipeline — retrieval + injection.
-        """
+        """Read pipeline — retrieve and inject memories into context."""
         logging.info(f"📤 Pipeline: processing read for '{query[:50]}'")
 
-        # Stage 1: Retrieval — filter by session
-        candidates = [e for e in self.store if e.session_id == session_id]
+        # Snapshot read — consolidation conflict avoided
+        with self._consolidation_lock:
+            candidates = [e for e in self.store if e.session_id == session_id]
 
-        if not candidates:
-            return ""
+            if not candidates:
+                return ""
 
-        # Stage 2: Update access stats
-        for entry in candidates:
-            entry.last_accessed = datetime.now().timestamp()
-            entry.access_count += 1
+            for entry in candidates:
+                 entry.last_accessed = datetime.now().timestamp()
+                 entry.access_count += 1
 
-        # Stage 3: Injection planner
-        context = self.injector.inject(query, candidates)
-        self.save_fn()
+            context = self.injector.inject(query, candidates)
+            self.save_fn()
 
         logging.info(f"📤 Pipeline: read complete, context length={len(context)}")
         return context

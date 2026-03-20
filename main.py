@@ -88,8 +88,8 @@ def ask_question(request: QueryRequest):
         procedural_rules = memory.get_procedural_rules(clean_query, session_id)
         if procedural_rules:
            logging.info(f"🔧 Procedural rules applied: {len(procedural_rules)}")
-           rewritten_query = rewritten_query + " " + " ".join(procedural_rules[:1])
-
+           # 🔧 Procedural rules applied — log only, don't append to query
+        
         # 🧭 STEP 5: Smart Router
         source = decide_source(rewritten_query)
         all_docs = []

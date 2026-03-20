@@ -24,6 +24,7 @@ from .pruner import MemoryPruner
 from .validator import MemoryValidator
 from .injector import MemoryInjector
 from .pipeline import MemoryPipeline
+from .observability import get_audit_log, get_snapshot
 
 MEMORY_STORE = "memory_store.json"
 logging.basicConfig(level=logging.INFO)
@@ -59,7 +60,10 @@ class MemoryManager:
         self._load()
         self.pipeline = MemoryPipeline(self._store, self._save)
         logging.info("✅ Advanced Memory Manager initialized")
-
+        self.audit    = get_audit_log()
+        self.snapshot = get_snapshot()
+        self._write_count = 0
+        
     def _load(self):
         if os.path.exists(MEMORY_STORE):
             try:
@@ -105,6 +109,10 @@ class MemoryManager:
 
         self.scorer.score_all(question, entry)
         self.pipeline.process_write(entry)
+        self.audit.log("write", memory_type.value, session_id, question, entry.composite_score())
+        # Snapshot every 10 saves
+        if self._write_count % 10 == 0:
+          self.snapshot.take(self._store)
         logging.info(f"💾 Memory saved [{memory_type.value}]: '{question[:50]}'")
 
     def recall(self, query: str, session_id: str = "default") -> str:
@@ -125,7 +133,9 @@ class MemoryManager:
 
         # Inject relevant memories
         context = self.pipeline.process_read(query, session_id)
+        self.audit.log("read", "all", session_id, query)
         return context
+    
     def get_procedural_rules(self, query: str, session_id: str = "default") -> list:
         """
         Get procedural memories that should affect agent behavior.
