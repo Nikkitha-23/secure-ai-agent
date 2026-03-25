@@ -4858,5 +4858,59 @@
     "text_preview": "what is AI?",
     "score": 0.0,
     "reason": ""
+  },
+  {
+    "timestamp": "2026-03-25T23:50:38.293951",
+    "operation": "read",
+    "memory_type": "all",
+    "session_id": "default",
+    "text_preview": "what is string?",
+    "score": 0.0,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-25T23:52:00.540027",
+    "operation": "read",
+    "memory_type": "all",
+    "session_id": "default",
+    "text_preview": "Definition of string data type in computer programming and its applications?",
+    "score": 0.0,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-26T00:49:15.423087",
+    "operation": "read",
+    "memory_type": "all",
+    "session_id": "default",
+    "text_preview": "what is string?",
+    "score": 0.0,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-26T00:49:25.008005",
+    "operation": "write",
+    "memory_type": "episodic",
+    "session_id": "default",
+    "text_preview": "what is string?",
+    "score": 0.724,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-26T00:50:54.975795",
+    "operation": "read",
+    "memory_type": "all",
+    "session_id": "default",
+    "text_preview": "what is string data type",
+    "score": 0.0,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-26T00:51:32.327064",
+    "operation": "write",
+    "memory_type": "episodic",
+    "session_id": "default",
+    "text_preview": "what is string data type",
+    "score": 0.724,
+    "reason": ""
   }
 ]
