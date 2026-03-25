@@ -19,6 +19,41 @@ if "recorded_question" not in st.session_state:
 # ── Sidebar ────────────────────────────────────────────────────────────────────
 with st.sidebar:
     st.header("⚙️ Settings")
+    # ── PDF Upload ─────────────────────────────────────────────────────────────
+    st.divider()
+    st.markdown("### 📄 Upload Documents")
+    if "uploaded_files" not in st.session_state:
+        st.session_state.uploaded_files = []
+
+    uploaded = st.file_uploader(
+        "Upload PDF files",
+        type=["pdf"],
+        accept_multiple_files=True,
+    )
+    if uploaded:
+        for file in uploaded:
+            if file.name not in st.session_state.uploaded_files:
+                with st.spinner(f"📥 Indexing {file.name}..."):
+                    try:
+                        res  = requests.post(
+                            "http://127.0.0.1:8000/upload",
+                            files={"file": (file.name, file.read(), "application/pdf")},
+                            timeout=60
+                        )
+                        data = res.json()
+                        if "✅" in data.get("message", ""):
+                            st.success(f"✅ {file.name} ({data.get('chunks','?')} chunks)")
+                            st.session_state.uploaded_files.append(file.name)
+                        else:
+                            st.error(data.get("message", "Upload failed"))
+                    except Exception as e:
+                        st.error(f"❌ {e}")
+
+    if st.session_state.uploaded_files:
+        st.markdown("**Indexed:**")
+        for f in st.session_state.uploaded_files:
+            st.caption(f"📄 {f}")
+    st.divider()
     st.session_state.session_id = st.text_input("Session ID", value="default")
     st.session_state.voice_mode = st.toggle("🎤 Voice Mode", value=False)
 

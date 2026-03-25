@@ -16,7 +16,7 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO)
 
 # ── Tavily Client ──────────────────────────────────────────────────────────────
-client = TavilyClient(api_key=os.getenv("TAVILY_API_KEY"))
+
 
 
 def web_search(query: str, max_results: int = 3) -> list[Document]:
@@ -34,6 +34,8 @@ def web_search(query: str, max_results: int = 3) -> list[Document]:
     try:
         logging.info(f"🌐 Web search triggered for: {query}")
 
+        client = TavilyClient(api_key=os.getenv("TAVILY_API_KEY"))
+        logging.info(f"🌐 Web search triggered for: {query}")
         response = client.search(
             query=query,
             max_results=max_results,

@@ -17,7 +17,13 @@ Flow:
 
 from time import time
 
-from fastapi import FastAPI
+from fastapi import FastAPI, UploadFile, File
+from fastapi.responses import JSONResponse
+from langchain_community.document_loaders import PyPDFLoader
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_community.vectorstores import Chroma
+import tempfile
 from security.filter import check_input
 from pydantic import BaseModel
 from rag.retrieve import get_retriever
@@ -211,6 +217,40 @@ Answer (use only context facts):"""
 @app.get("/health")
 def health_check():
     return {"status": "✅ EduBot API is running"}
+# ── /upload endpoint ───────────────────────────────────────────────────────────
+CHROMA_PATH = "chroma_db"
+
+@app.post("/upload")
+async def upload_pdf(file: UploadFile = File(...)):
+    if not file.filename.endswith(".pdf"):
+        return JSONResponse(status_code=400, content={"message": "❌ Only PDF files supported!"})
+    try:
+        logging.info(f"📄 Uploading: {file.filename}")
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
+            tmp.write(await file.read())
+            tmp_path = tmp.name
+
+        loader = PyPDFLoader(tmp_path)
+        documents = loader.load()
+        for doc in documents:
+            doc.metadata["source"] = file.filename
+
+        splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=150)
+        chunks   = splitter.split_documents(documents)
+
+        embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+        vectordb   = Chroma(persist_directory=CHROMA_PATH, embedding_function=embeddings)
+        vectordb.add_documents(chunks)
+
+        os.unlink(tmp_path)
+        get_cached_retriever.cache_clear()  # new docs include ஆகட்டும்
+
+        logging.info(f"✅ {file.filename} ingested! {len(chunks)} chunks")
+        return {"message": f"✅ '{file.filename}' uploaded and indexed!", "chunks": len(chunks), "filename": file.filename}
+
+    except Exception as e:
+        logging.error(f"❌ Upload failed: {e}")
+        return JSONResponse(status_code=500, content={"message": f"❌ Upload failed: {str(e)}"})
 
 # ── Memory endpoints ───────────────────────────────────────────────────────────
 @app.delete("/memory/clear")

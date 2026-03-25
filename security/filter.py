@@ -35,6 +35,20 @@ BLOCKED_PATTERNS = [
     r"updated instructions?:",
     r"from now on (you|ignore|forget)",
     r"start over (and|with|from)",
+
+    r"you are now dan",
+    r"do anything now",
+    r"bypass your (safety|filters|rules)",
+    r"pretend you have no restrictions",
+    r"you must ignore your (training|rules|instructions)",
+    r"simulate being (an? )?(evil|unrestricted|dangerous)",
+    r"override your instructions",
+    r"reveal your instructions",
+    r"new instructions:",
+    r"developer mode (on|activated|enabled)",
+    r"jailbreak mode (activated|on|enabled)",
+    r"disregard (all |any )?(previous |prior )?instructions",
+    r"tell me (your |any |all )?(secrets?|hidden|confidential)",
 ]
 
 # Suspicious but not auto-block — reduce confidence
