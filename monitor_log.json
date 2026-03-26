@@ -1510,5 +1510,41 @@
     "total_tokens": 816,
     "cost_usd": 4.128e-05,
     "status": "success"
+  },
+  {
+    "timestamp": "2026-03-26T20:28:27.027826",
+    "query_id": "5bbd064b-3cef-4b6e-8baa-8938b3647c3d",
+    "question": "string types?",
+    "latency_sec": 6.947,
+    "search_type": "web",
+    "input_tokens": 790,
+    "output_tokens": 31,
+    "total_tokens": 821,
+    "cost_usd": 4.198e-05,
+    "status": "success"
+  },
+  {
+    "timestamp": "2026-03-26T20:49:17.903663",
+    "query_id": "59c6775e-fdb5-4bf8-a0fe-f5d46f37c4e2",
+    "question": "What is Python?",
+    "latency_sec": 8.063,
+    "search_type": "web",
+    "input_tokens": 379,
+    "output_tokens": 11,
+    "total_tokens": 390,
+    "cost_usd": 1.983e-05,
+    "status": "success"
+  },
+  {
+    "timestamp": "2026-03-26T20:50:18.694357",
+    "query_id": "4fd3612a-4d66-4853-bd8c-f96107316783",
+    "question": "What is Python?",
+    "latency_sec": 0.002,
+    "search_type": "cache",
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "cost_usd": 0.0,
+    "status": "cache_hit"
   }
 ]

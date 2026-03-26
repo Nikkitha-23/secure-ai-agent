@@ -4912,5 +4912,140 @@
     "text_preview": "what is string data type",
     "score": 0.724,
     "reason": ""
+  },
+  {
+    "timestamp": "2026-03-26T20:28:20.089413",
+    "operation": "read",
+    "memory_type": "all",
+    "session_id": "default",
+    "text_preview": "string types?",
+    "score": 0.0,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-26T20:28:26.990423",
+    "operation": "write",
+    "memory_type": "episodic",
+    "session_id": "default",
+    "text_preview": "string types?",
+    "score": 0.7465,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-26T20:30:26.690252",
+    "operation": "read",
+    "memory_type": "all",
+    "session_id": "default",
+    "text_preview": "what is string",
+    "score": 0.0,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-26T20:30:35.706022",
+    "operation": "write",
+    "memory_type": "episodic",
+    "session_id": "default",
+    "text_preview": "what is string",
+    "score": 0.7255,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-26T20:31:36.061934",
+    "operation": "read",
+    "memory_type": "all",
+    "session_id": "default",
+    "text_preview": "what is string data type",
+    "score": 0.0,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-26T20:31:46.531614",
+    "operation": "write",
+    "memory_type": "episodic",
+    "session_id": "default",
+    "text_preview": "what is string data type",
+    "score": 0.736,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-26T20:41:11.287359",
+    "operation": "read",
+    "memory_type": "all",
+    "session_id": "default",
+    "text_preview": "how to use AI IN modern technologies?",
+    "score": 0.0,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-26T20:41:17.703373",
+    "operation": "write",
+    "memory_type": "preference",
+    "session_id": "default",
+    "text_preview": "how to use AI IN modern technologies?",
+    "score": 0.7997,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-26T20:49:17.883262",
+    "operation": "write",
+    "memory_type": "episodic",
+    "session_id": "test-session-1",
+    "text_preview": "What is Python?",
+    "score": 0.7165,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-26T20:52:19.021941",
+    "operation": "write",
+    "memory_type": "episodic",
+    "session_id": "test-unique-query-001",
+    "text_preview": "What is machine learning used for?",
+    "score": 0.763,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-26T20:57:18.279318",
+    "operation": "write",
+    "memory_type": "procedural",
+    "session_id": "complexity-2",
+    "text_preview": "How does machine learning work?",
+    "score": 0.8368,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-26T20:57:25.581653",
+    "operation": "write",
+    "memory_type": "preference",
+    "session_id": "complexity-3",
+    "text_preview": "Compare and contrast supervised with unsupervised learning, explain their benefi",
+    "score": 0.763,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-26T21:02:39.163145",
+    "operation": "write",
+    "memory_type": "procedural",
+    "session_id": "routing-1",
+    "text_preview": "What are the latest AI developments in 2026?",
+    "score": 0.7968,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-26T21:02:44.261322",
+    "operation": "write",
+    "memory_type": "episodic",
+    "session_id": "routing-2",
+    "text_preview": "Explain the algorithm for binary search",
+    "score": 0.775,
+    "reason": ""
+  },
+  {
+    "timestamp": "2026-03-26T21:02:50.840385",
+    "operation": "write",
+    "memory_type": "procedural",
+    "session_id": "routing-3",
+    "text_preview": "How to install Python and configure a virtual environment",
+    "score": 0.798,
+    "reason": ""
   }
 ]
