@@ -36,6 +36,7 @@ from rag.monitor import monitor
 from rag.cache import cache              # ← NEW
 from functools import lru_cache
 from dotenv import load_dotenv
+from rag.agent_loop import run_agent
 import logging
 import uuid
 import os
@@ -212,6 +213,34 @@ Answer (use only context facts):"""
         logging.error(f"Unexpected error: {e}")
         return {"answer": "⚠️ Something went wrong. Please try again.", "sources": [], "search_type": "error"}
 
+@app.post("/agent")
+def ask_agent(request: QueryRequest):
+    """
+    🤖 Real Agentic Loop endpoint
+    Plan → Execute → Reflect → Retry → Memory → Response
+    """
+    query = request.question
+    session_id = request.session_id
+
+    # Security check first
+    result = check_input(query)
+    if result["status"] == "block":
+        return {"answer": "⚠️ Blocked.", "sources": [], "search_type": "blocked"}
+
+    clean_query = result["clean_input"]
+
+    # Cache check
+    cached = cache.get(clean_query)
+    if cached:
+        return cached
+
+    # 🤖 Run Real Agent Loop
+    response_data = run_agent(clean_query, session_id)
+
+    # Cache save
+    cache.set(clean_query, response_data)
+
+    return response_data
 
 # ── Health check ───────────────────────────────────────────────────────────────
 @app.get("/health")
