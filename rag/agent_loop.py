@@ -266,11 +266,222 @@ Answer is BAD if:
 
     return {"good": True, "reason": "default pass", "retry_source": "web", "complexity": complexity_level}
 
+# ── Step 3.1: Query Decomposition ────────────────────────────────────────────
+def decompose_query(query: str) -> dict:
+    """
+    Analyzes if query should be decomposed into sub-tasks.
+    Returns: {should_decompose: bool, subtasks: list, reasoning: str}
+    """
+    complexity_info = detect_complexity(query)
+    complexity_level = complexity_info["level"]
+    
+    # Only decompose complex queries
+    if complexity_level != "complex":
+        return {
+            "should_decompose": False,
+            "subtasks": [],
+            "reasoning": f"Query is {complexity_level} - single-step execution sufficient"
+        }
+    
+    # Check for multi-part indicators that suggest decomposition
+    query_lower = query.lower()
+    
+    # Multi-part question patterns: AND (connect), multiple commas, OR (alternatives)
+    has_and = " and " in query_lower or ", " in query_lower
+    has_or = " or " in query_lower
+    
+    # Check for comparison/contrast words + multi-part
+    comparison_words = ["compare", "contrast", "difference", "vs", "versus"]
+    has_comparison = any(word in query_lower for word in comparison_words)
+    
+    # Decomposition indicators
+    decomp_indicators = [
+        has_comparison and has_and,  # "Compare X and Y"
+        query_lower.count(",") >= 2,  # "pros, cons, and implications"
+        ("explain" in query_lower or "discuss" in query_lower) and has_and,  # Multi-part questions
+        "pros and cons" in query_lower or "benefits and drawbacks" in query_lower,  # Explicit multi-part
+    ]
+    
+    has_decomp_indicator = any(decomp_indicators)
+    
+    if not has_decomp_indicator:
+        return {
+            "should_decompose": False,
+            "subtasks": [],
+            "reasoning": "Complex query but no multi-part indicators detected"
+        }
+    
+    # LLM-based decomposition
+    decomposition_prompt = f"""Analyze this query and break it into focused sub-tasks if needed.
+
+Query: {query}
+
+Return valid JSON ONLY (no markdown, no extra text):{{
+  "can_decompose": true,
+  "subtasks": [
+    {{"number": 1, "task": "first focused question", "purpose": "what this explores"}},
+    {{"number": 2, "task": "second focused question", "purpose": "what this explores"}},
+    {{"number": 3, "task": "third focused question", "purpose": "what this explores"}}
+  ],
+  "synthesis_instruction": "how to combine results"
+}}
+
+Or if not decomposable:{{
+  "can_decompose": false,
+  "subtasks": [],
+  "synthesis_instruction": ""
+}}"""
+
+    try:
+        raw = call_llm(decomposition_prompt)
+        import json, re
+        
+        # Try to extract JSON more robustly
+        json_match = re.search(r'\{[\s\S]*\}', raw)
+        if json_match:
+            json_str = json_match.group()
+            # Clean up common JSON problems
+            json_str = json_str.replace('\\n', ' ').replace('\\', '')
+            decomp = json.loads(json_str)
+            
+            if decomp.get("can_decompose", False) and decomp.get("subtasks"):
+                logging.info(f"🔀 Query decomposed into {len(decomp['subtasks'])} sub-tasks")
+                return {
+                    "should_decompose": True,
+                    "subtasks": decomp["subtasks"],
+                    "reasoning": f"Complex multi-part query: {len(decomp['subtasks'])} focused sub-tasks",
+                    "synthesis_instruction": decomp.get("synthesis_instruction", "Combine results coherently")
+                }
+    except json.JSONDecodeError as e:
+        logging.warning(f"⚠️ Decomposition JSON parse failed: {e}")
+    except Exception as e:
+        logging.warning(f"⚠️ Decomposition LLM failed: {e}")
+    
+    return {
+        "should_decompose": False,
+        "subtasks": [],
+        "reasoning": "Decomposition analysis inconclusive - proceeding with single-step"
+    }
+
+# ── Step 3.2: Sub-task Executor ──────────────────────────────────────────────
+def execute_subtask(subtask_dict: dict, session_id: str, parent_context: str = "") -> dict:
+    """
+    Executes a single sub-task using the full agent loop.
+    Returns: {task: str, answer: str, success: bool, sources: list}
+    """
+    subtask = subtask_dict.get("task", "")
+    task_num = subtask_dict.get("number", 1)
+    purpose = subtask_dict.get("purpose", "")
+    
+    logging.info(f"\n{'─'*40}")
+    logging.info(f"📍 Sub-task {task_num}: {subtask}")
+    logging.info(f"   Purpose: {purpose}")
+    
+    # Inject parent context into subtask
+    enriched_query = subtask
+    if parent_context:
+        enriched_query = f"{parent_context}\nSpecific question: {subtask}"
+    
+    # Route the subtask using smart routing
+    route_info = route_sources(enriched_query)
+    
+    logging.info(f"   🧭 Routing: {route_info['reasoning']} (confidence: {route_info['confidence']})")
+    
+    # Execute tools for this subtask
+    docs = execute_tools(enriched_query, route_info["primary"])
+    
+    if not docs:
+        docs = execute_tools(enriched_query, route_info["fallback"])
+    
+    if not docs:
+        logging.warning(f"⚠️ No documents for sub-task {task_num}")
+        return {
+            "task": subtask,
+            "number": task_num,
+            "answer": "No relevant information found",
+            "success": False,
+            "sources": []
+        }
+    
+    # Rerank documents
+    reranked = rerank_documents(enriched_query, docs, top_n=3)
+    context = "\n\n".join([doc.page_content for doc in reranked])
+    
+    # Generate answer for subtask
+    prompt = f"""You are a focused expert answering a specific question.
+
+Context:
+{context}
+
+Question: {subtask}
+
+Answer concisely and directly. Focus on answering this specific question.
+Answer:"""
+
+    answer = call_llm(prompt)
+    logging.info(f"   ✅ Answer: {answer[:80]}...")
+    
+    sources = list(set([
+        doc.metadata.get("source", "unknown") for doc in reranked
+    ]))
+    
+    return {
+        "task": subtask,
+        "number": task_num,
+        "purpose": purpose,
+        "answer": answer,
+        "success": True,
+        "sources": sources
+    }
+
+# ── Step 3.3: Result Synthesizer ─────────────────────────────────────────────
+def synthesize_results(original_query: str, subtask_results: list, synthesis_instruction: str) -> str:
+    """
+    Combines sub-task results into a coherent final answer.
+    Returns: synthesized answer string
+    """
+    logging.info(f"\n{'═'*50}")
+    logging.info(f"🔗 Synthesizing {len(subtask_results)} sub-task results...")
+    
+    # Build context from all subtask results
+    results_context = "\n\n".join([
+        f"Sub-task {r['number']}: {r['task']}\nAnswer: {r['answer']}"
+        for r in subtask_results if r.get("success")
+    ])
+    
+    synthesis_prompt = f"""You are an expert at synthesizing information from multiple sources.
+Your task is to combine the following sub-task answers into a comprehensive, coherent response.
+
+Original question: {original_query}
+
+Sub-task results:
+{results_context}
+
+Synthesis approach: {synthesis_instruction}
+
+Create a final answer that:
+1. Directly addresses the original question
+2. Integrates insights from all sub-tasks
+3. Maintains logical flow and coherence
+4. Highlights key relationships between sub-tasks
+5. Is comprehensive yet concise
+
+Final Answer:"""
+
+    synthesis = call_llm(synthesis_prompt)
+    logging.info(f"🔗 Synthesis complete: {synthesis[:100]}...")
+    
+    return synthesis
+
 # ── MAIN AGENT LOOP ───────────────────────────────────────────────────────────
 def run_agent(query: str, session_id: str = "default") -> dict:
     """
-    Full agentic loop with adaptive retry strategies:
-    Plan → Execute → Answer → Reflect → Adaptive Retry → Memory → Return
+    Full agentic loop with multi-step planning:
+    Decompose → Plan → Execute → Reflect → Adaptive Retry → Synthesize → Memory → Return
+    
+    If query is complex and multi-part, decomposes into sub-tasks.
+    Each sub-task runs through independent routing/retry.
+    Results are synthesized into coherent final answer.
     """
     logging.info(f"\n{'='*50}")
     logging.info(f"🤖 Agent started for: {query}")
@@ -278,6 +489,56 @@ def run_agent(query: str, session_id: str = "default") -> dict:
     # Memory recall
     past_context = memory.recall(query, session_id)
 
+    # ─── STEP 0: Multi-Step Planning (Query Decomposition) ─────────────────
+    decomposition = decompose_query(query)
+    
+    if decomposition.get("should_decompose", False):
+        logging.info(f"🔀 Using multi-step planning strategy")
+        
+        subtasks = decomposition.get("subtasks", [])
+        synthesis_instruction = decomposition.get("synthesis_instruction", "")
+        
+        # Execute each sub-task
+        subtask_results = []
+        for subtask_dict in subtasks:
+            result = execute_subtask(subtask_dict, session_id, parent_context=query)
+            subtask_results.append(result)
+        
+        # Synthesize results
+        final_answer = synthesize_results(query, subtask_results, synthesis_instruction)
+        
+        # Collect all sources from subtasks
+        all_sources = []
+        for result in subtask_results:
+            all_sources.extend(result.get("sources", []))
+        all_sources = list(set(all_sources))
+        
+        # Memory save for main query
+        memory.save(query, final_answer, session_id)
+        
+        logging.info(f"✅ Multi-step agent complete | {len(subtasks)} sub-tasks executed")
+        
+        return {
+            "answer": final_answer,
+            "sources": all_sources,
+            "attempts": 1,
+            "plan": {
+                "source": "multi-step",
+                "needs_rewrite": False,
+                "reasoning_depth": "deep",
+                "route_info": {"confidence": 0.9}
+            },
+            "reflection": {
+                "good": True,
+                "reason": "multi-step synthesis",
+                "complexity": "complex"
+            },
+            "search_type": "multi-step",
+            "subtask_results": subtask_results,
+            "is_multi_step": True
+        }
+    
+    # ─── SINGLE-STEP PATH (Original agent loop) ──────────────────────────
     # STEP 1: Plan
     plan = planner(query)
     source = plan.get("source", "pdf")
@@ -379,5 +640,6 @@ Answer:"""
         "attempts": attempt,
         "plan": plan,
         "reflection": reflection,
-        "search_type": source
+        "search_type": source,
+        "is_multi_step": False
     }
