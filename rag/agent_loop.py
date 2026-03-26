@@ -183,6 +183,11 @@ def detect_complexity(query: str) -> dict:
     multi_part_count = sum(query_lower.count(sep) for sep in multi_part_indicators)
     complexity_score += min(multi_part_count, 2)
     
+    # Check for sequential/chained queries (step-by-step reasoning)
+    sequential_keywords = [" then ", " and then ", " after ", " next "]
+    if any(kw in query_lower for kw in sequential_keywords):
+        complexity_score += 1
+
     # Word count indicator
     if word_count > 20:
         complexity_score += 1
@@ -217,7 +222,8 @@ def detect_complexity(query: str) -> dict:
     return {
         "level": level,
         "score": complexity_score,
-        "criteria": criteria
+        "criteria": criteria,
+        "min_words": criteria["min_words"]
     }
 
 # ── Step 3: Reflector ─────────────────────────────────────────────────────────
@@ -275,16 +281,26 @@ def decompose_query(query: str) -> dict:
     complexity_info = detect_complexity(query)
     complexity_level = complexity_info["level"]
     
-    # Only decompose complex queries
-    if complexity_level != "complex":
+    # Only decompose complex queries — UNLESS it has freshness + explanation pattern
+    query_lower = query.lower()
+    freshness_words = ["latest", "recent", "new", "current"]
+    explain_words = ["explain", "describe", "understand", "how", "what's"]
+    has_and = " and " in query_lower
+    has_freshness_explain = any(f in query_lower for f in freshness_words) and has_and and any(e in query_lower for e in explain_words)
+    
+    if complexity_level == "simple" and not has_freshness_explain:
         return {
             "should_decompose": False,
             "subtasks": [],
             "reasoning": f"Query is {complexity_level} - single-step execution sufficient"
         }
     
-    # Check for multi-part indicators that suggest decomposition
-    query_lower = query.lower()
+    if complexity_level == "moderate" and not has_freshness_explain:
+        return {
+            "should_decompose": False,
+            "subtasks": [],
+            "reasoning": f"Query is {complexity_level} - single-step execution sufficient"
+        }
     
     # Multi-part question patterns: AND (connect), multiple commas, OR (alternatives)
     has_and = " and " in query_lower or ", " in query_lower
@@ -294,12 +310,18 @@ def decompose_query(query: str) -> dict:
     comparison_words = ["compare", "contrast", "difference", "vs", "versus"]
     has_comparison = any(word in query_lower for word in comparison_words)
     
+    # Check for freshness indicators combined with explanation
+    freshness_words = ["latest", "recent", "new", "current"]
+    explain_words = ["explain", "describe", "understand", "how", "what"]
+    has_freshness_explain = any(f in query_lower for f in freshness_words) and has_and and any(e in query_lower for e in explain_words)
+    
     # Decomposition indicators
     decomp_indicators = [
         has_comparison and has_and,  # "Compare X and Y"
         query_lower.count(",") >= 2,  # "pros, cons, and implications"
         ("explain" in query_lower or "discuss" in query_lower) and has_and,  # Multi-part questions
         "pros and cons" in query_lower or "benefits and drawbacks" in query_lower,  # Explicit multi-part
+        has_freshness_explain,  # "Latest research and explain architecture"
     ]
     
     has_decomp_indicator = any(decomp_indicators)
@@ -323,7 +345,7 @@ Return valid JSON ONLY (no markdown, no extra text):{{
     {{"number": 2, "task": "second focused question", "purpose": "what this explores"}},
     {{"number": 3, "task": "third focused question", "purpose": "what this explores"}}
   ],
-  "synthesis_instruction": "how to combine results"
+  "synthesis_instruction": "Intelligently combine all results: (1) DEDUPLICATE: Remove any repeated information across answers, (2) RESOLVE CONTRADICTIONS: If answers conflict, explain why and reconcile them, (3) STRUCTURE: Organize into logical sections with clear hierarchy, (4) REASON: Explain relationships and dependencies between components, (5) CONCLUDE: Provide synthesis-based recommendations or insights"
 }}
 
 Or if not decomposable:{{
