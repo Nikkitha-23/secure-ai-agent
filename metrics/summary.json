@@ -1,0 +1,29 @@
+{
+  "timestamp": "2026-03-27T22:54:13.815894",
+  "query_statistics": {
+    "total_queries": 2,
+    "decomposed": 1,
+    "single_step": 1,
+    "decomposition_rate": 50.0
+  },
+  "latency_metrics": {
+    "avg_latency_ms": 300.0,
+    "min_latency_ms": 100.0,
+    "max_latency_ms": 500.0,
+    "p95_latency_ms": 500.0,
+    "p99_latency_ms": 500.0
+  },
+  "tool_usage": {
+    "pdf": 1
+  },
+  "routing_confidence": {
+    "avg": 0.85,
+    "min": 0.85,
+    "max": 0.85
+  },
+  "synthesis_quality": {
+    "avg_score": 0.92,
+    "samples": 1
+  },
+  "error_summary": {}
+}

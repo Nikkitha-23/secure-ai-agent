@@ -1,0 +1,4 @@
+{"timestamp": "2026-03-27T22:54:13.813370", "query": "Compare CNN and RNN for medical imaging", "query_type": "comparison", "complexity": "complex", "decomposed": true, "num_subtasks": 3, "latency_ms": 500.0}
+{"timestamp": "2026-03-27T22:54:13.813885", "type": "subtask", "subtask_num": 1, "task": "Analyze CNN architecture", "tool": "pdf", "confidence": 0.85, "latency_ms": 150.0, "success": true}
+{"timestamp": "2026-03-27T22:54:13.814895", "type": "synthesis", "quality_score": 0.92, "deduplication_effective": true, "sources_combined": 2, "latency_ms": 80.0}
+{"timestamp": "2026-03-27T22:54:13.814895", "query": "What is machine learning?", "query_type": "definition", "complexity": "simple", "decomposed": false, "num_subtasks": 0, "latency_ms": 100.0}
