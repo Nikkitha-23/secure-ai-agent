@@ -56,8 +56,12 @@ def rerank_documents(query: str, docs: list[Document], top_n: int = 3) -> list[D
         reverse=True
     )
 
-    # ── Step 4: Return only top_n ──────────────────────────────────────────────
-    top_docs = [doc for _, doc in scored_docs[:top_n]]
+    # ── Step 4: Return top_n with attached rerank_score metadata ──────────────
+    top_docs = []
+    for score, doc in scored_docs[:top_n]:
+        meta = dict(doc.metadata or {})
+        meta["rerank_score"] = float(round(float(score), 4))
+        top_docs.append(Document(page_content=doc.page_content, metadata=meta))
 
     logging.info(f"✅ Re-ranked: kept top {top_n} out of {len(docs)} chunks")
     return top_docs

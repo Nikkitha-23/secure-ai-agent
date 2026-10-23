@@ -168,6 +168,11 @@ class MemoryPipeline:
                  entry.access_count += 1
 
             context = self.injector.inject(query, candidates)
+
+            # Fallback — injector empty return பண்ணா recent memories direct குடு
+            if not context and candidates:
+                recent = sorted(candidates, key=lambda e: e.created_at, reverse=True)[:3]
+                context = "\n".join([e.text for e in recent])
             self.save_fn()
 
         logging.info(f"📤 Pipeline: read complete, context length={len(context)}")

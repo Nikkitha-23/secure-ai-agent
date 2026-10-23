@@ -2,6 +2,7 @@
 router.py — Smart Router (PDF vs Web Search)
 --------------------------------------------
 Question வந்தா:
+→ Math expression? → Calculator use பண்ணும் (LLM call இல்லாம, fast)
 → PDF-ல இருக்கா?  → ChromaDB use பண்ணும்
 → Live info வேணுமா? → Tavily Web Search use பண்ணும்
 → Both வேணுமா?    → இரண்டும் use பண்ணும் ✅
@@ -9,6 +10,7 @@ Question வந்தா:
 
 from groq import Groq
 from dotenv import load_dotenv
+from rag.calculator import is_calculator_query
 import logging
 import os
 
@@ -24,10 +26,17 @@ def decide_source(query: str) -> str:
     Uses LLM to decide where to search for the answer.
 
     Returns one of:
+        "calculator" → math expression, no LLM/retrieval needed
         "pdf"  → search ChromaDB only
         "web"  → search Tavily only
         "both" → search both and combine
     """
+
+    # 🧮 Catch calculator queries BEFORE calling the LLM — saves an API
+    # call + latency for something a regex/heuristic can answer instantly
+    if is_calculator_query(query):
+        logging.info(f"🧮 Router decision for '{query[:50]}': CALCULATOR")
+        return "calculator"
 
     prompt = f"""You are a routing assistant. Given a user question, decide where to search for the answer.
 
@@ -74,10 +83,12 @@ if __name__ == "__main__":
         "What is our college fee structure and current inflation rate?",
         "Who is the HOD of CSE department?",
         "What are the latest updates in Python 3.13?",
+        "What is 12 * 4 + 3?",
+        "calculate 100 / 5",
     ]
 
     print("\n🧭 Router Test:\n")
     for q in test_queries:
         decision = decide_source(q)
-        icon = {"pdf": "📄", "web": "🌐", "both": "📄🌐"}.get(decision, "❓")
+        icon = {"pdf": "📄", "web": "🌐", "both": "📄🌐", "calculator": "🧮"}.get(decision, "❓")
         print(f"{icon} [{decision.upper()}] {q}")

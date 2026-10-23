@@ -1,4 +1,4 @@
-from ddgs import DDGS
+from duckduckgo_search import DDGS
 from langchain_core.documents import Document
 from dotenv import load_dotenv
 import logging
@@ -13,8 +13,12 @@ def web_search(query: str, max_results: int = 3) -> list[Document]:
         
         # ✅ Tavily first try
         try:
+            api_key = os.getenv("TAVILY_API_KEY")
+            if not api_key or "your_tavily_api_key" in api_key or not api_key.strip():
+                raise ValueError("TAVILY_API_KEY is not configured")
+
             from tavily import TavilyClient
-            client = TavilyClient(api_key=os.getenv("TAVILY_API_KEY"))
+            client = TavilyClient(api_key=api_key)
             response = client.search(query=query, max_results=max_results, include_answer=True, search_depth="advanced")
             docs = []
             if response.get("answer"):
@@ -24,7 +28,7 @@ def web_search(query: str, max_results: int = 3) -> list[Document]:
             logging.info(f"✅ Tavily returned {len(docs)} results")
             return docs
         
-        # ⚡ Tavily fail ஆனா DuckDuckGo fallback
+        # ⚡ Tavily fail -> DuckDuckGo fallback
         except Exception as tavily_err:
             logging.warning(f"⚠️ Tavily failed: {tavily_err} → switching to DuckDuckGo")
             docs = []

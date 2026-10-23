@@ -17,10 +17,10 @@ MAX_MEMORY_TOKENS = 300
 
 # Min score to inject a memory
 INJECTION_THRESHOLD = {
-    MemoryType.PROCEDURAL: 0.5,   # always inject if relevant
-    MemoryType.SEMANTIC:   0.55,
-    MemoryType.PREFERENCE: 0.45,
-    MemoryType.EPISODIC:   0.6,
+    MemoryType.PROCEDURAL: 0.1,
+    MemoryType.SEMANTIC:   0.1,
+    MemoryType.PREFERENCE: 0.1,
+    MemoryType.EPISODIC:   0.1,
 }
 
 # Injection order — procedural first (most important)

@@ -102,7 +102,7 @@ class MemoryManager:
             memory_type=memory_type,
             session_id=session_id,
             source_query=question,
-            source_answer=answer[:300],
+            source_answer=answer,
             created_at=datetime.now().timestamp(),
             last_accessed=datetime.now().timestamp(),
         )
@@ -114,6 +114,25 @@ class MemoryManager:
         if self._write_count % 10 == 0:
           self.snapshot.take(self._store)
         logging.info(f"💾 Memory saved [{memory_type.value}]: '{question[:50]}'")
+
+    def store(
+        self,
+        arg1: str,
+        arg2: str,
+        arg3: Optional[str] = None,
+        session_id: str = "default"
+    ):
+        """
+        Adapter method for store() to maintain compatibility with callers expecting:
+        - store(session_id, question, answer)
+        - store(question, answer, session_id)
+        """
+        if arg3 is not None:
+            # Called as store(user_id/session_id, question, answer)
+            self.save(question=arg2, answer=arg3, session_id=arg1)
+        else:
+            # Called as store(question, answer, session_id)
+            self.save(question=arg1, answer=arg2, session_id=session_id)
 
     def recall(self, query: str, session_id: str = "default") -> str:
         """
@@ -131,8 +150,15 @@ class MemoryManager:
             entry.last_accessed = datetime.now().timestamp()
             entry.access_count += 1
 
-        # Inject relevant memories
+        # Try pipeline injection first
         context = self.pipeline.process_read(query, session_id)
+
+        # Fallback — if pipeline returns empty, use recent memories directly
+        if not context:
+            recent = sorted(session_memories, key=lambda e: e.created_at, reverse=True)[:5]
+            context = "\n".join([e.text for e in recent])
+
+        self._save()
         self.audit.log("read", "all", session_id, query)
         return context
     
@@ -170,6 +196,17 @@ class MemoryManager:
             reverse=True
         )
         return [e.to_dict() for e in sorted_memories[:limit]]
+
+    def get_last_assistant_message(self, session_id: str = "default") -> Optional[str]:
+        """
+        Get the most recent assistant answer for a session.
+        Returns the full text of the assistant answer, or None if no history exists.
+        """
+        session_memories = [e for e in self._store if e.session_id == session_id]
+        if not session_memories:
+            return None
+        latest = max(session_memories, key=lambda e: e.created_at)
+        return latest.source_answer or None
 
     def stats(self, session_id: str = "default") -> dict:
         """Memory statistics."""

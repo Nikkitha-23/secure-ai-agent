@@ -12,31 +12,62 @@ from rag.reranker import rerank_documents
 from rag.web_search import web_search
 from rag.query_rewriter import rewrite_query
 from rag.memory import get_memory_manager
+from hallucination_guard import check_hallucination
 from dotenv import load_dotenv
 from groq import Groq
+import json
+import re
 import logging
 import os
+
+from dotenv import load_dotenv
+from groq import Groq
 
 load_dotenv()
 logging.basicConfig(level=logging.INFO)
 
-llm = Groq(api_key=os.getenv("GROQ_API_KEY"))
 memory = get_memory_manager()
 retriever = get_retriever()
+
+from rag.workspace import get_workspace_manager
+workspace_mgr = get_workspace_manager()
 
 MAX_RETRIES = 3  # Agent max retry count
 
 # ── LLM Call ──────────────────────────────────────────────────────────────────
-def call_llm(prompt: str) -> str:
-    response = llm.chat.completions.create(
-        model="llama-3.1-8b-instant",
-        messages=[
-            {"role": "system", "content": "You are a secure and helpful college AI assistant."},
-            {"role": "user",   "content": prompt}
-        ],
-        temperature=0
-    )
-    return response.choices[0].message.content.strip()
+try:
+    from app.config import call_llm as _app_call_llm, settings
+    def call_llm(prompt: str) -> str:
+        return _app_call_llm(prompt)
+except Exception:
+    llm = Groq(api_key=os.getenv("GROQ_API_KEY"))
+    def call_llm(prompt: str) -> str:
+        response = llm.chat.completions.create(
+            model=os.getenv("LLM_MODEL", "llama-3.3-70b-versatile"),
+            messages=[
+                {"role": "system", "content": "You are a secure and helpful college AI assistant."},
+                {"role": "user",   "content": prompt}
+            ],
+            temperature=0
+        )
+        return response.choices[0].message.content.strip()
+# ── Calculator Tool ───────────────────────────────────────────────────────────
+def needs_calculator(query: str) -> bool:
+    """Detect if query needs math calculation"""
+    import re
+    calc_keywords = ["calculate", "average", "sum of", "gpa", "percentage",
+                      "total of", "compute", "add", "multiply", "divide", "subtract"]
+    has_numbers = bool(re.search(r'\d', query))
+    return any(kw in query.lower() for kw in calc_keywords) and has_numbers
+
+def calculator_tool(query: str) -> str:
+    """Use LLM to perform calculation step-by-step"""
+    prompt = f"""Solve this math/calculation problem step by step.
+
+Problem: {query}
+
+Show your work briefly, then give the final answer clearly."""
+    return call_llm(prompt)
 
 # ── Step 1: Planner ───────────────────────────────────────────────────────────
 def planner(query: str) -> dict:
@@ -446,14 +477,32 @@ Answer:"""
     sources = list(set([
         doc.metadata.get("source", "unknown") for doc in reranked
     ]))
-    
+
+    # 🛡️ Hallucination / Grounding Check
+    context_chunks = [doc.page_content for doc in reranked]
+    grounding_result = check_hallucination(
+        query=subtask,
+        answer=answer,
+        chunks=context_chunks,
+        sources=sources,
+        user_id=session_id,
+        role="student"
+    )
+    logging.info(f"   🛡️ Grounding [{task_num}]: {grounding_result['grounding']}")
+
+    # If hallucinated, replace with safe fallback — don't poison synthesis
+    if grounding_result["grounding"]["label"] == "hallucinated":
+        answer = f"Not enough verified information found for: '{subtask}'"
+        logging.warning(f"   ⚠️ Sub-task {task_num} flagged as hallucinated — using fallback")
+
     return {
         "task": subtask,
         "number": task_num,
         "purpose": purpose,
         "answer": answer,
         "success": True,
-        "sources": sources
+        "sources": sources,
+        "grounding": grounding_result["grounding"]
     }
 
 # ── Step 3.3: Result Synthesizer ─────────────────────────────────────────────
@@ -496,20 +545,48 @@ Final Answer:"""
     return synthesis
 
 # ── MAIN AGENT LOOP ───────────────────────────────────────────────────────────
-def run_agent(query: str, session_id: str = "default") -> dict:
+def run_agent(query: str, session_id: str = "default", task_id: str = None) -> dict:
     """
-    Full agentic loop with multi-step planning:
-    Decompose → Plan → Execute → Reflect → Adaptive Retry → Synthesize → Memory → Return
-    
-    If query is complex and multi-part, decomposes into sub-tasks.
-    Each sub-task runs through independent routing/retry.
-    Results are synthesized into coherent final answer.
+    Full agentic loop with multi-step planning and Workspace task tracking:
+    Workspace Init → Decompose → Plan → Execute Subtasks → Reflect → Synthesize → Memory → Return
     """
     logging.info(f"\n{'='*50}")
     logging.info(f"🤖 Agent started for: {query}")
 
+    # 🗂️ Step 1: Initialize Workspace / Task State
+    workspace = workspace_mgr.create_task(session_id=session_id, query=query, task_id=task_id)
+    workspace.start()
+    workspace.note(f"Agent started | session={session_id} | task={workspace.task_id}")
+
     # Memory recall
     past_context = memory.recall(query, session_id)
+
+    # ─── STEP -1: Calculator Tool Check ────────────────────────────────────
+    if needs_calculator(query):
+        logging.info("🧮 Calculator tool triggered")
+        c_step = workspace.add_step(tool="calculator", purpose="Math calculation", step_num=1)
+        c_step.start()
+        try:
+            answer = calculator_tool(query)
+            c_step.complete(answer)
+            workspace.complete(answer=answer, search_type="calculator", confidence=0.95)
+        except Exception as e:
+            c_step.fail(str(e))
+            workspace.fail(f"Calculator failed: {e}")
+            answer = f"Error during calculation: {e}"
+
+        memory.save(query, answer, session_id)
+        return {
+            "answer": answer,
+            "sources": ["Calculator Tool"],
+            "attempts": 1,
+            "plan": {"source": "calculator", "needs_rewrite": False, "reasoning_depth": "simple"},
+            "reflection": {"good": True, "reason": "calculator used", "complexity": "simple"},
+            "search_type": "calculator",
+            "is_multi_step": False,
+            "task_id": workspace.task_id,
+            "session_id": session_id
+        }
 
     # ─── STEP 0: Multi-Step Planning (Query Decomposition) ─────────────────
     decomposition = decompose_query(query)
@@ -520,12 +597,39 @@ def run_agent(query: str, session_id: str = "default") -> dict:
         subtasks = decomposition.get("subtasks", [])
         synthesis_instruction = decomposition.get("synthesis_instruction", "")
         
-        # Execute each sub-task
+        workspace.plan = decomposition
+        workspace.save()
+
+        # Execute each sub-task with workspace step tracking
         subtask_results = []
-        for subtask_dict in subtasks:
-            result = execute_subtask(subtask_dict, session_id, parent_context=query)
-            subtask_results.append(result)
-        
+        for i, subtask_dict in enumerate(subtasks):
+            desc = subtask_dict.get("task", f"Subtask {i+1}")
+            purpose = subtask_dict.get("purpose", desc)
+            ws_step = workspace.add_step(
+                tool=desc[:40],
+                purpose=purpose[:80],
+                step_num=i + 1
+            )
+            ws_step.start()
+
+            try:
+                result = execute_subtask(subtask_dict, session_id, parent_context=query)
+                if result.get("success", False):
+                    ws_step.complete(result.get("answer", ""))
+                else:
+                    ws_step.fail(result.get("answer") or "Subtask execution failed")
+                subtask_results.append(result)
+            except Exception as e:
+                ws_step.fail(str(e))
+                subtask_results.append({
+                    "task": desc,
+                    "number": i + 1,
+                    "purpose": purpose,
+                    "answer": f"Subtask failed with error: {str(e)}",
+                    "success": False,
+                    "sources": []
+                })
+
         # Synthesize results
         final_answer = synthesize_results(query, subtask_results, synthesis_instruction)
         
@@ -535,6 +639,13 @@ def run_agent(query: str, session_id: str = "default") -> dict:
             all_sources.extend(result.get("sources", []))
         all_sources = list(set(all_sources))
         
+        # Verify required steps status
+        has_failed = len(workspace.failed_steps) > 0
+        if has_failed:
+            workspace.fail(f"{len(workspace.failed_steps)} of {len(subtasks)} subtask(s) failed.")
+        else:
+            workspace.complete(answer=final_answer, search_type="multi-step", confidence=0.9)
+
         # Memory save for main query
         memory.save(query, final_answer, session_id)
         
@@ -551,13 +662,15 @@ def run_agent(query: str, session_id: str = "default") -> dict:
                 "route_info": {"confidence": 0.9}
             },
             "reflection": {
-                "good": True,
+                "good": not has_failed,
                 "reason": "multi-step synthesis",
                 "complexity": "complex"
             },
             "search_type": "multi-step",
             "subtask_results": subtask_results,
-            "is_multi_step": True
+            "is_multi_step": True,
+            "task_id": workspace.task_id,
+            "session_id": session_id
         }
     
     # ─── SINGLE-STEP PATH (Original agent loop) ──────────────────────────
@@ -567,18 +680,28 @@ def run_agent(query: str, session_id: str = "default") -> dict:
     route_info = plan.get("route_info", {})
     routing_confidence = route_info.get("confidence", 0.5)
     
+    workspace.plan = plan
+    workspace.search_type = source
+    workspace.save()
+
+    single_step = workspace.add_step(
+        tool=source,
+        purpose=f"Single-step execution via {source}",
+        step_num=1
+    )
+    single_step.start()
+
     logging.info(f"📊 Routing confidence: {routing_confidence}")
     
     # Determine retry threshold based on routing confidence
-    # Low confidence = lower threshold = more aggressive retries
     if routing_confidence >= 0.85:
-        max_retries_allowed = 1  # High confidence: accept first good answer
+        max_retries_allowed = 1
         retry_threshold = 0.95
     elif routing_confidence >= 0.75:
-        max_retries_allowed = 2  # Moderate confidence: 2 chances
+        max_retries_allowed = 2
         retry_threshold = 0.85
     else:
-        max_retries_allowed = MAX_RETRIES  # Low confidence: full retry limit
+        max_retries_allowed = MAX_RETRIES
         retry_threshold = 0.7
     
     logging.info(f"🎯 Retry strategy: max {max_retries_allowed} attempts, quality threshold {retry_threshold}")
@@ -594,6 +717,11 @@ def run_agent(query: str, session_id: str = "default") -> dict:
 
     # STEP 3: Agentic Loop — retry until good answer or max retries
     while attempt < max_retries_allowed and not reflection.get("good", False):
+        if attempt > 0:
+            single_step.retry_count += 1
+            workspace.retry_count += 1
+            workspace.note(f"Retry attempt {attempt + 1} with source {source}")
+
         attempt += 1
         logging.info(f"🔄 Attempt {attempt}/{MAX_RETRIES} | Source: {source}")
 
@@ -603,6 +731,7 @@ def run_agent(query: str, session_id: str = "default") -> dict:
         if not docs:
             logging.warning(f"⚠️ No docs found — switching to both")
             source = "both"
+            single_step.tool = source
             continue
 
         # Rerank
@@ -627,34 +756,76 @@ Answer:"""
         # STEP 4: Reflect
         reflection = reflect(answer, query)
 
+        # STEP 4.5: Hallucination / Grounding Check
+        context_chunks = [doc.page_content for doc in reranked]
+        chunk_sources = [doc.metadata.get("source", "unknown") for doc in reranked]
+        grounding_result = check_hallucination(
+            query=query,
+            answer=answer,
+            chunks=context_chunks,
+            sources=chunk_sources,
+            user_id=session_id,
+            role="student"
+        )
+        logging.info(f"🛡️ Grounding: {grounding_result['grounding']}")
+
+        # If hallucinated — treat as bad answer, trigger retry
+        if grounding_result["grounding"]["label"] == "hallucinated":
+            reflection["good"] = False
+            reflection["reason"] = "Hallucination detected - low grounding with retrieved context"
+
         # If bad — adaptive retry strategy
         if not reflection.get("good", False):
             retry_source = reflection.get("retry_source", "both")
             
-            # Adaptive strategy based on routing confidence and attempts
             if routing_confidence < 0.7:
-                # Low confidence route = switch more aggressively
                 if attempt == 1:
-                    source = "both"  # First retry: expand to both sources
+                    source = "both"
                     logging.warning(f"🔄 Low confidence route — expanding to both sources")
                 else:
-                    source = retry_source or "both"  # Later retries: defer to reflection
+                    source = retry_source or "both"
                     logging.warning(f"🔄 Attempt {attempt}: using reflection suggestion")
             else:
-                # High confidence route = defer to reflection judgment
                 source = retry_source or "both"
                 logging.warning(f"🔄 Attempt {attempt}: {reflection.get('reason', 'retrying')}")
             
-            # Log strategy
+            single_step.tool = source
             logging.info(f"📋 Retry strategy: confidence={routing_confidence:.2f}, source={source}")
 
-    # STEP 5: Memory save
-    memory.save(query, answer, session_id)
-    logging.info(f"✅ Agent done after {attempt} attempt(s) | Quality: {'✅' if reflection.get('good') else '❌'}")
-
+    # STEP 5: Workspace step & task completion status
     sources = list(set([
         doc.metadata.get("source", "unknown") for doc in reranked
     ])) if 'reranked' in locals() else []
+
+    confidence = round((
+        (0.7 if 'reranked' in locals() and reranked else 0.3) +
+        (0.9 if reflection.get("good") else 0.4) +
+        routing_confidence
+    ) / 3, 2)
+
+    if reflection.get("good", False):
+        single_step.complete(answer)
+        workspace.complete(answer=answer, search_type=source, confidence=confidence)
+    else:
+        err_msg = reflection.get("reason", "Reflection rejected answer and retries exhausted.")
+        single_step.fail(err_msg)
+        workspace.fail(err_msg)
+
+    # STEP 6: Memory save
+    memory.save(query, answer, session_id)
+    logging.info(f"✅ Agent done after {attempt} attempt(s) | Quality: {'✅' if reflection.get('good') else '❌'}")
+
+    # Agent Trace
+    trace = {
+        "query": query,
+        "tool": source,
+        "memory_used": bool(past_context),
+        "reflection_triggered": attempt > 1,
+        "attempts": attempt
+    }
+    grounding_info = grounding_result["grounding"] if 'grounding_result' in locals() else {"label": "unknown", "score": 0}
+    trace["grounding"] = grounding_info
+    logging.info(f"🔍 Agent Trace: {trace} | Confidence: {confidence}")
 
     return {
         "answer": answer,
@@ -663,5 +834,9 @@ Answer:"""
         "plan": plan,
         "reflection": reflection,
         "search_type": source,
-        "is_multi_step": False
+        "is_multi_step": False,
+        "trace": trace,
+        "confidence": confidence,
+        "task_id": workspace.task_id,
+        "session_id": session_id
     }

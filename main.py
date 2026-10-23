@@ -1,287 +1,286 @@
 """
-main.py — FastAPI with Full Agentic RAG Pipeline + Memory + Monitor + Cache
----------------------------------------------------------------------------
-Flow:
-1. Security Check
-2. Cache Check         ← NEW (instant return if cached)
-3. Memory Recall
-4. Query Rewriting
-5. Smart Router        → pdf / web / both
-6. Retrieve            → ChromaDB and/or Tavily
-7. Re-Ranker           → top 3 chunks
-8. LLM (Groq)          → final answer
-9. Memory Save
-10. Cache Save         ← NEW
-11. Monitor Log
+main.py — FastAPI Application Entry Point
+------------------------------------------
+Handles API routing, request validation, health monitoring,
+and delegates query processing to the canonical core agent.
+
+Endpoints:
+  - POST /agent       : Main agentic query endpoint
+  - POST /ask         : Legacy RAG endpoint (delegates to core agent)
+  - POST /agent/image : Multi-modal vision analysis
+  - POST /upload      : PDF ingestion endpoint
+  - GET  /health      : System health check
+  - GET  /workspace/* : Workspace session status
+  - GET  /memory/*    : Memory management
+  - GET  /monitor/*   : Performance monitoring
+  - GET  /cache/*     : Query cache control
+  - GET  /eval/*      : Evaluation report
 """
 
-from time import time
-
-from fastapi import FastAPI, UploadFile, File
-from fastapi.responses import JSONResponse
-from langchain_community.document_loaders import PyPDFLoader
-from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_community.embeddings import HuggingFaceEmbeddings
-from langchain_community.vectorstores import Chroma
-import tempfile
-from security.filter import check_input
-from pydantic import BaseModel
-from rag.retrieve import get_retriever
-from rag.reranker import rerank_documents
-from rag.router import decide_source
-from rag.web_search import web_search
-from rag.query_rewriter import rewrite_query
-from rag.memory import get_memory_manager
-from rag.monitor import monitor
-from rag.cache import cache              # ← NEW
-from functools import lru_cache
-from dotenv import load_dotenv
-from rag.agent_loop import run_agent
-import logging
-import uuid
 import os
+import uuid
+import json
+import logging
+import tempfile
+from typing import Optional
+from functools import lru_cache
 
-load_dotenv()
+from fastapi import FastAPI, UploadFile, File, Form, Header
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel, Field
 
-from groq import Groq
+from app.config import settings
+from app.models import AgentRequest, AgentResponse
+from core.agent import run_agent
+from core.workspace import get_or_create_workspace, get_workspace_manager
+from rag.retrieve import get_retriever
+from rag.cache import cache
+from rag.monitor import monitor
+from rag.memory import get_memory_manager
 
 logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-app = FastAPI()
-client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+app = FastAPI(
+    title="Secure AI Agent",
+    description="Enterprise-grade Secure Agentic AI System with RAG, Tool Execution, and Memory",
+    version="2.0.0"
+)
+
+memory = get_memory_manager()
 
 @lru_cache(maxsize=1)
 def get_cached_retriever():
     return get_retriever()
 
-retriever = get_cached_retriever()
-memory = get_memory_manager()
 
-class QueryRequest(BaseModel):
+# ── Health Check ─────────────────────────────────────────────────────────────
+
+@app.get("/health")
+def health_check():
+    return {
+        "status": "online",
+        "service": "Secure AI Agent",
+        "model": settings.LLM_MODEL,
+        "max_agent_steps": settings.MAX_AGENT_STEPS
+    }
+
+
+# ── Core Agent Endpoint ──────────────────────────────────────────────────────
+
+@app.post("/agent")
+def ask_agent(
+    request: AgentRequest,
+    x_user_role: Optional[str] = Header(default="student", alias="X-User-Role"),
+    x_user_id: Optional[str] = Header(default="default_user", alias="X-User-Id")
+):
+    """
+    🤖 Primary Canonical Agent Endpoint
+    Executes security validation, memory recall, planning, dynamic tool selection,
+    multi-step execution, reflection, and answer synthesis.
+    """
+    session_id = request.session_id or f"sess_{x_user_id}"
+    user_role = request.user_role or x_user_role
+    user_id = request.user_id or x_user_id
+
+    # Check query cache
+    cached = cache.get(request.question)
+    if cached:
+        logger.info(f"⚡ Cache HIT for query: {request.question[:50]}...")
+        return cached
+
+    result = run_agent(
+        query=request.question,
+        user_role=user_role,
+        user_id=user_id,
+        session_id=session_id
+    )
+
+    # Cache successful responses
+    if result and result.get("search_type") != "security_blocked":
+        cache.set(request.question, result)
+
+    return result
+
+
+# ── Legacy /ask Endpoint (Backwards Compatibility) ───────────────────────────
+
+class LegacyQueryRequest(BaseModel):
     question: str
     session_id: str = "default"
 
 @app.post("/ask")
-def ask_question(request: QueryRequest):
-    query = request.question
-    session_id = request.session_id
-    query_id = str(uuid.uuid4())
-    monitor.start(query_id)
-    logging.info(f"📩 User query: {query}")
-
-    # 🔐 STEP 1: Security Check
-    result = check_input(query)
-    if result["status"] == "block":
-        monitor.end(query_id, question=query, search_type="blocked", status="blocked")
-        logging.warning(f"🚫 Blocked query: {query}")
-        return {"answer": "⚠️ Your input contains unsafe instructions and was blocked.", "sources": [], "search_type": "blocked"}
-
-    clean_query = result["clean_input"]
-
-    # ⚡ STEP 2: Cache Check
-    cached_response = cache.get(clean_query)
-    if cached_response:
-        monitor.end(query_id, question=clean_query, search_type="cache", status="cache_hit")
-        logging.info(f"⚡ Cache HIT — returning instantly!")
-        return cached_response
-
-    try:
-        # 🧠 STEP 3: Memory Recall
-        past_context = memory.recall(clean_query, session_id)
-        if past_context:
-            logging.info(f"🧠 Memory recalled for session: {session_id}")
-
-        # ✏️ STEP 4: Query Rewriting
-        rewritten_query = rewrite_query(clean_query)
-        # 🔧 Procedural memory → routing bias
-        procedural_rules = memory.get_procedural_rules(clean_query, session_id)
-        if procedural_rules:
-           logging.info(f"🔧 Procedural rules applied: {len(procedural_rules)}")
-           # 🔧 Procedural rules applied — log only, don't append to query
-        
-        # 🧭 STEP 5: Smart Router
-        source = decide_source(rewritten_query)
-        all_docs = []
-
-        # 📚 STEP 6a: PDF Retrieval
-        if source in ["pdf", "both"]:
-            pdf_docs = retriever.invoke(rewritten_query)
-            logging.info(f"📄 PDF chunks retrieved: {len(pdf_docs)}")
-            all_docs.extend(pdf_docs)
-
-        # 🌐 STEP 6b: Web Search
-        if source in ["web", "both"]:
-            web_docs = web_search(rewritten_query, max_results=3)
-            logging.info(f"🌐 Web results retrieved: {len(web_docs)}")
-            all_docs.extend(web_docs)
-
-        if not all_docs:
-            monitor.end(query_id, question=clean_query, search_type=source, status="no_results")
-            return {
-                "answer": "❌ No relevant information found. Please try rephrasing your question.",
-                "sources": [],
-                "search_type": source,
-                "rewritten_query": rewritten_query
-            }
-
-        # 🏆 STEP 7: Re-Rank
-        reranked_docs = rerank_documents(rewritten_query, all_docs, top_n=3)
-        logging.info(f"✅ Re-ranked: top {len(reranked_docs)} chunks selected")
-
-        context = "\n\n".join([doc.page_content for doc in reranked_docs])
-        memory_section = f"\n{past_context}\n" if past_context else ""
-
-        prompt = f"""
-You are a document question-answering system.
-
-STRICT RULES:
-- Use ONLY the EXACT information from the context below.
-- Copy key facts DIRECTLY from context — do not paraphrase.
-- Do NOT use outside knowledge under any circumstances.
-- Do NOT add any information not present in context.
-- If the answer is in past conversations, you may use it.
-- If answer not in context, say ONLY: "Not found in documents."
-{memory_section}
-Context:
-{context}
-
-Question:
-{clean_query}
-
-Answer (use only context facts):"""
-
-        # 🚀 STEP 8: Groq LLM Call with retry
-        def groq_with_retry(messages, retries=3, wait=10):
-            for attempt in range(retries):
-                try:
-                    return client.chat.completions.create(
-                        model="llama-3.1-8b-instant",
-                        messages=messages,
-                        temperature=0
-                    )
-                except Exception as e:
-                    if "429" in str(e) and attempt < retries - 1:
-                        logging.warning(f"⏳ Rate limit — waiting {wait}s (attempt {attempt+1})")
-                        time.sleep(wait)
-                    else:
-                        raise e
-
-        response = groq_with_retry([
-            {"role": "system", "content": "You are a secure and helpful college AI assistant."},
-            {"role": "user",   "content": prompt}
-        ])
-
-        answer = response.choices[0].message.content
-
-        # 💾 STEP 9: Memory Save
-        memory.save(clean_query, answer, session_id)
-
-        # 📊 STEP 10: Monitor Log
-        monitor.end(
-            query_id,
-            question=clean_query,
-            search_type=source,
-            input_tokens=len(prompt.split()),
-            output_tokens=len(answer.split()),
-            status="success"
-        )
-
-        sources = list(set([
-            doc.metadata.get("source", "unknown") for doc in reranked_docs
-        ]))
-
-        response_data = {
-            "answer": answer,
-            "sources": sources,
-            "context": [doc.page_content for doc in reranked_docs],
-            "search_type": source,
-            "rewritten_query": rewritten_query
-        }
-
-        # ⚡ STEP 11: Cache Save
-        cache.set(clean_query, response_data)
-
-        return response_data
-
-    except ConnectionError as e:
-        monitor.end(query_id, question=clean_query, status="error")
-        logging.error(f"Connection error: {e}")
-        return {"answer": "⚠️ Could not connect. Please try again.", "sources": [], "search_type": "error"}
-
-    except Exception as e:
-        monitor.end(query_id, question=clean_query, status="error")
-        logging.error(f"Unexpected error: {e}")
-        return {"answer": "⚠️ Something went wrong. Please try again.", "sources": [], "search_type": "error"}
-
-@app.post("/agent")
-def ask_agent(request: QueryRequest):
+def ask_question(request: LegacyQueryRequest):
     """
-    🤖 Real Agentic Loop endpoint
-    Plan → Execute → Reflect → Retry → Memory → Response
+    Legacy asking endpoint. Automatically delegates to the core agent engine.
     """
-    query = request.question
-    session_id = request.session_id
+    return ask_agent(AgentRequest(
+        question=request.question,
+        session_id=request.session_id
+    ))
 
-    # Security check first
-    result = check_input(query)
-    if result["status"] == "block":
-        return {"answer": "⚠️ Blocked.", "sources": [], "search_type": "blocked"}
 
-    clean_query = result["clean_input"]
+# ── Image Analysis Endpoint ──────────────────────────────────────────────────
 
-    # Cache check
-    cached = cache.get(clean_query)
-    if cached:
-        return cached
+@app.post("/agent/image")
+async def ask_agent_image(
+    question: str = Form(...),
+    session_id: str = Form(default="default"),
+    image: UploadFile = File(...)
+):
+    """
+    🖼️ Multi-modal Vision Analysis
+    """
+    from tools.image_tool import run_image_tool
 
-    # 🤖 Run Real Agent Loop
-    response_data = run_agent(clean_query, session_id)
+    image_bytes = await image.read()
+    result = run_image_tool(query=question, image_input=image_bytes)
 
-    # Cache save
-    cache.set(clean_query, response_data)
+    return {
+        "answer": result,
+        "sources": ["Image Analysis Tool (Vision)"],
+        "search_type": "image",
+        "attempts": 1,
+        "is_multi_step": False
+    }
 
-    return response_data
 
-# ── Health check ───────────────────────────────────────────────────────────────
-@app.get("/health")
-def health_check():
-    return {"status": "✅ EduBot API is running"}
-# ── /upload endpoint ───────────────────────────────────────────────────────────
+# ── Document Upload & Ingestion ───────────────────────────────────────────────
+
 CHROMA_PATH = "chroma_db"
+UPLOAD_DIR = "data/uploads"
 
 @app.post("/upload")
-async def upload_pdf(file: UploadFile = File(...)):
-    if not file.filename.endswith(".pdf"):
+async def upload_pdf(file: UploadFile = File(...), force_reindex: bool = Form(default=False)):
+    if not file.filename.lower().endswith(".pdf"):
         return JSONResponse(status_code=400, content={"message": "❌ Only PDF files supported!"})
+
+    content = await file.read()
+    file_size = len(content)
+
+    if file_size == 0:
+        return JSONResponse(status_code=400, content={"message": f"❌ File '{file.filename}' is empty (0 bytes)."})
+
+    if file_size > 50 * 1024 * 1024:  # 50 MB limit
+        return JSONResponse(status_code=400, content={"message": f"❌ File '{file.filename}' exceeds 50MB limit."})
+
+    os.makedirs(UPLOAD_DIR, exist_ok=True)
+    saved_path = os.path.join(UPLOAD_DIR, file.filename)
+
+    if os.path.exists(saved_path) and not force_reindex:
+        logger.info(f"ℹ️ Document '{file.filename}' already exists at {saved_path}")
+        return {
+            "message": f"ℹ️ '{file.filename}' is already indexed and ready.",
+            "chunks": 0,
+            "filename": file.filename,
+            "file_size": file_size,
+            "already_indexed": True
+        }
+
+    tmp_path = None
     try:
-        logging.info(f"📄 Uploading: {file.filename}")
+        logger.info(f"📄 Uploading PDF document: {file.filename} ({file_size} bytes)")
         with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
-            tmp.write(await file.read())
+            tmp.write(content)
             tmp_path = tmp.name
+
+        from langchain_community.document_loaders import PyPDFLoader
+        from langchain_text_splitters import RecursiveCharacterTextSplitter
+        from langchain_community.embeddings import HuggingFaceEmbeddings
+        from langchain_community.vectorstores import Chroma
 
         loader = PyPDFLoader(tmp_path)
         documents = loader.load()
+
+        if not documents:
+            return JSONResponse(status_code=400, content={"message": f"⚠️ No text could be extracted from '{file.filename}'."})
+
         for doc in documents:
             doc.metadata["source"] = file.filename
 
         splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=150)
-        chunks   = splitter.split_documents(documents)
+        chunks = splitter.split_documents(documents)
+
+        if not chunks:
+            return JSONResponse(status_code=400, content={"message": f"⚠️ Document '{file.filename}' resulted in 0 text chunks."})
 
         embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
-        vectordb   = Chroma(persist_directory=CHROMA_PATH, embedding_function=embeddings)
+        vectordb = Chroma(persist_directory=CHROMA_PATH, embedding_function=embeddings)
         vectordb.add_documents(chunks)
 
-        os.unlink(tmp_path)
-        get_cached_retriever.cache_clear()  # new docs include ஆகட்டும்
+        import shutil
+        shutil.copy2(tmp_path, saved_path)
 
-        logging.info(f"✅ {file.filename} ingested! {len(chunks)} chunks")
-        return {"message": f"✅ '{file.filename}' uploaded and indexed!", "chunks": len(chunks), "filename": file.filename}
+        get_cached_retriever.cache_clear()
 
+        logger.info(f"✅ Ingested {file.filename}: {len(chunks)} chunks saved to {saved_path}")
+        return {
+            "message": f"✅ '{file.filename}' uploaded and indexed successfully!",
+            "chunks": len(chunks),
+            "filename": file.filename,
+            "file_size": file_size,
+            "saved_path": saved_path,
+            "already_indexed": False
+        }
     except Exception as e:
-        logging.error(f"❌ Upload failed: {e}")
+        logger.error(f"❌ Upload failed for {file.filename}: {e}")
         return JSONResponse(status_code=500, content={"message": f"❌ Upload failed: {str(e)}"})
+    finally:
+        if tmp_path and os.path.exists(tmp_path):
+            try:
+                os.unlink(tmp_path)
+            except Exception:
+                pass
 
-# ── Memory endpoints ───────────────────────────────────────────────────────────
+
+# ── Workspace Endpoints ──────────────────────────────────────────────────────
+
+@app.get("/workspace/status")
+def workspace_status(session_id: str = "default"):
+    ws = get_or_create_workspace(session_id)
+    return ws.summary()
+
+@app.get("/workspace/tasks/{task_id}")
+def get_workspace_task(
+    task_id: str,
+    x_user_id: Optional[str] = Header(default=None, alias="X-User-Id"),
+    session_id: Optional[str] = None
+):
+    """
+    Retrieve full task state by task ID.
+    Enforces session isolation if session_id or X-User-Id header is supplied.
+    """
+    mgr = get_workspace_manager()
+    verify_session = session_id or (f"sess_{x_user_id}" if x_user_id else None)
+    try:
+        ws = mgr.get_workspace(task_id, session_id=verify_session)
+        if not ws:
+            return JSONResponse(status_code=404, content={"message": f"Task '{task_id}' not found."})
+        return ws.to_dict()
+    except PermissionError as pe:
+        return JSONResponse(status_code=403, content={"message": str(pe)})
+
+@app.get("/workspace/sessions/{session_id}/tasks")
+def list_session_tasks(session_id: str, limit: int = 20):
+    """List all workspace tasks for a session."""
+    mgr = get_workspace_manager()
+    tasks = mgr.list_session_tasks(session_id, limit=limit)
+    return {
+        "session_id": session_id,
+        "count": len(tasks),
+        "tasks": [t.summary() for t in tasks]
+    }
+
+@app.delete("/workspace/sessions/{session_id}")
+def clear_workspace_session(session_id: str):
+    """Clear workspace tasks for a session."""
+    mgr = get_workspace_manager()
+    mgr.clear_session(session_id)
+    return {"status": f"✅ Workspace cleared for session: {session_id}"}
+
+
+# ── Memory Endpoints ─────────────────────────────────────────────────────────
+
 @app.delete("/memory/clear")
 def clear_memory(session_id: str = "default"):
     memory.clear(session_id)
@@ -292,7 +291,9 @@ def recent_memory(session_id: str = "default"):
     recent = memory.get_recent(session_id)
     return {"session_id": session_id, "conversations": recent}
 
-# ── Monitor endpoints ──────────────────────────────────────────────────────────
+
+# ── Monitor & Observability Endpoints ────────────────────────────────────────
+
 @app.get("/monitor/summary")
 def monitor_summary():
     return monitor.summary()
@@ -306,7 +307,9 @@ def monitor_clear():
     monitor.clear()
     return {"status": "✅ Monitor log cleared"}
 
-# ── Cache endpoints ────────────────────────────────────────────────────────────
+
+# ── Cache Management Endpoints ───────────────────────────────────────────────
+
 @app.get("/cache/stats")
 def cache_stats():
     return cache.stats()
@@ -315,3 +318,22 @@ def cache_stats():
 def cache_clear():
     cache.clear()
     return {"status": "✅ Cache cleared"}
+
+
+# ── Evaluation Endpoints ─────────────────────────────────────────────────────
+
+EVAL_REPORT_PATH = os.path.join("metrics", "eval_report.json")
+
+@app.get("/eval/report")
+def eval_report():
+    if not os.path.exists(EVAL_REPORT_PATH):
+        return JSONResponse(
+            status_code=404,
+            content={"message": "No eval report found. Run `python run_eval.py` first."}
+        )
+    try:
+        with open(EVAL_REPORT_PATH, "r", encoding="utf-8") as f:
+            report = json.load(f)
+        return report
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"message": f"Failed to read eval report: {str(e)}"})

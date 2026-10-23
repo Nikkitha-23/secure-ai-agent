@@ -124,3 +124,70 @@ with col_d2:
         requests.delete(f"{API}/cache/clear")
         st.success("Cache cleared!")
         st.rerun()
+# ── Eval Report ────────────────────────────────────────────────────────────────
+st.divider()
+st.subheader("🧪 Evaluation Report")
+
+try:
+    eval_data = requests.get(f"{API}/eval/report", timeout=5).json()
+    eval_summary = eval_data.get("summary", {})
+    eval_results = eval_data.get("results", [])
+
+    # Summary metrics
+    col_e1, col_e2, col_e3, col_e4 = st.columns(4)
+    with col_e1:
+        st.metric("Total Tested", eval_summary.get("total_tested", 0))
+    with col_e2:
+        st.metric("Avg Eval Score", eval_summary.get("avg_eval_score", 0))
+    with col_e3:
+        grounding = eval_summary.get("grounding_distribution", {})
+        grounded = grounding.get("grounded", 0) + grounding.get("partial", 0)
+        total = sum(grounding.values()) or 1
+        st.metric("Grounded Rate", f"{round(grounded/total*100, 1)}%")
+    with col_e4:
+        grades = eval_summary.get("grade_distribution", {})
+        a_grades = grades.get("A 🟢", 0)
+        st.metric("A-Grade Answers", a_grades)
+
+    # Grade distribution chart
+    if grades:
+        st.subheader("📊 Grade Distribution")
+        grade_df = pd.DataFrame(
+            list(grades.items()),
+            columns=["Grade", "Count"]
+        )
+        st.bar_chart(grade_df.set_index("Grade"))
+
+    # Grounding distribution
+    if grounding:
+        st.subheader("🛡️ Grounding Distribution")
+        ground_df = pd.DataFrame(
+            list(grounding.items()),
+            columns=["Label", "Count"]
+        )
+        st.bar_chart(ground_df.set_index("Label"))
+
+    # Per-question results table
+    if eval_results:
+        st.subheader("📋 Per-Question Results")
+        rows = []
+        for r in eval_results:
+            rows.append({
+                "Question": r.get("question", "")[:50],
+                "Grade": r.get("eval_grade", ""),
+                "Score": r.get("eval_overall_score", 0),
+                "Grounding": r.get("grounding_label", ""),
+                "G-Score": r.get("grounding_score", 0),
+                "Search": r.get("search_type", ""),
+            })
+        eval_df = pd.DataFrame(rows)
+        st.dataframe(eval_df, use_container_width=True)
+
+    st.caption(f"Last eval run: {eval_summary.get('last_run', 'Never')}")
+
+    # Re-run eval button
+    if st.button("🔁 Re-run Evaluation"):
+        st.info("Run `python run_eval.py` in terminal to update eval results.")
+
+except Exception as e:
+    st.warning(f"⚠️ No eval report found. Run `python run_eval.py` first. ({e})")
